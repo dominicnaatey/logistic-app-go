@@ -31,9 +31,9 @@ type DatabaseConfig struct {
 type RedisConfig struct {
 	URL      string
 	Password string
-	// Upstash REST API (alternative)
-	RestURL   string
-	RestToken string
+	// Upstash REST API (serverless, recommended)
+	UpstashRestURL   string
+	UpstashRestToken string
 }
 
 type JWTConfig struct {
@@ -87,10 +87,10 @@ func Load() (*Config, error) {
 			URL: getEnv("DATABASE_URL", ""),
 		},
 		Redis: RedisConfig{
-			URL:       getEnv("REDIS_URL", "redis://localhost:6379"),
-			Password:  getEnv("REDIS_PASSWORD", ""),
-			RestURL:   getEnv("UPSTASH_REDIS_REST_URL", ""),
-			RestToken: getEnv("UPSTASH_REDIS_REST_TOKEN", ""),
+			URL:              getEnv("REDIS_URL", "redis://localhost:6379"),
+			Password:         getEnv("REDIS_PASSWORD", ""),
+			UpstashRestURL:   getEnv("UPSTASH_REDIS_REST_URL", ""),
+			UpstashRestToken: getEnv("UPSTASH_REDIS_REST_TOKEN", ""),
 		},
 		JWT: JWTConfig{
 			Secret:    getEnv("JWT_SECRET", ""),
