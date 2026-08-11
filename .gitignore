@@ -1,3 +1,55 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+*.test
+*.out
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go workspace
+go.work
+go.work.sum
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+
+# Database
+*.db
+*.sqlite
+
+# Build artifacts
+dist/
+build/
+
+# Implementation Plan
+IMPLEMENTATION-PLAN.md
+IMPLEMENTATION-PLAN-PART2.md
+
+# Migration Guide
 GO-MIGRATION-GUIDE.md
 
+# App Guide
 trucking-logistics-app-guide.md
