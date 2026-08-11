@@ -61,8 +61,22 @@ This project maintains comprehensive, living documentation that evolves as we bu
    - Performance tips
    - Troubleshooting
 
+7. **[docs/NEON-BENEFITS.md](NEON-BENEFITS.md)** — Neon decision rationale
+   - Cost comparison and analysis
+   - Performance benchmarks
+   - Feature comparison with alternatives
+   - Risk assessment
+
+8. **[docs/UPSTASH-SETUP.md](UPSTASH-SETUP.md)** — Upstash Redis setup
+   - Why Upstash for this project
+   - Account setup and configuration
+   - Regional selection guide
+   - Cost management
+   - Performance tips
+   - Troubleshooting
+
 ### Domain Understanding
-7. **[trucking-logistics-app-guide.md](../trucking-logistics-app-guide.md)** — Product requirements
+9. **[trucking-logistics-app-guide.md](../trucking-logistics-app-guide.md)** — Product requirements
    - User roles and needs
    - Domain-specific requirements
    - Cross-border considerations
@@ -73,7 +87,7 @@ This project maintains comprehensive, living documentation that evolves as we bu
 ## 📋 Planning & Roadmap
 
 ### Implementation Plan
-8. **[IMPLEMENTATION-PLAN.md](../IMPLEMENTATION-PLAN.md)** — Phases 0-5
+10. **[IMPLEMENTATION-PLAN.md](../IMPLEMENTATION-PLAN.md)** — Phases 0-5
    - Week-by-week breakdown
    - Foundation through GPS Tracking
    - Technical tasks
