@@ -33,8 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Neon PostgreSQL integration** with serverless architecture
 - PostGIS extension auto-enablement for geospatial queries
 - Connection pooling configuration optimized for Neon
-- Redis client with pub/sub support
+- **Upstash Redis integration** with serverless architecture
+- Redis client with pub/sub support (compatible with Upstash)
 - Context-aware cache operations (Get, Set, Del, Incr, Expire)
+- Support for both native Redis protocol and REST API
 
 #### HTTP Server
 - Gin-based HTTP server with graceful shutdown
@@ -56,6 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation Index (`docs/DOCUMENTATION-INDEX.md`)
 - Contributing Guidelines (`CONTRIBUTING.md`)
 - **Neon PostgreSQL Setup Guide** (`docs/NEON-SETUP.md`)
+- **Neon Benefits & Decision Rationale** (`docs/NEON-BENEFITS.md`)
+- **Upstash Redis Setup Guide** (`docs/UPSTASH-SETUP.md`)
 - Implementation Plan (12-week roadmap)
 - Migration Guide from NestJS
 - Changelog template
