@@ -36,15 +36,15 @@ func main() {
 	}
 	defer database.Close(db)
 
-	// Initialize Redis
-	redisClient, err := cache.NewRedisClient(cfg.Redis.URL, cfg.Redis.Password)
+	// Initialize Upstash Redis (REST API)
+	upstashClient, err := cache.NewUpstashClient(cfg.Redis.UpstashRestURL, cfg.Redis.UpstashRestToken)
 	if err != nil {
-		log.Fatalf("Failed to connect to Redis: %v", err)
+		log.Fatalf("Failed to connect to Upstash Redis: %v", err)
 	}
-	defer redisClient.Close()
+	defer upstashClient.Close()
 
 	// Initialize router
-	router := setupRouter(cfg, db, redisClient)
+	router := setupRouter(cfg, db, upstashClient)
 
 	// Start server
 	srv := &http.Server{
@@ -77,7 +77,7 @@ func main() {
 	log.Println("Server exited gracefully")
 }
 
-func setupRouter(cfg *config.Config, db interface{}, redis *cache.RedisClient) *gin.Engine {
+func setupRouter(cfg *config.Config, db interface{}, upstash *cache.UpstashClient) *gin.Engine {
 	router := gin.New()
 
 	// Global middleware

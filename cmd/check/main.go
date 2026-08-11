@@ -27,10 +27,10 @@ func main() {
 		log.Fatalf("❌ PostgreSQL check failed: %v\n", err)
 	}
 
-	// Check Redis
-	fmt.Println("\n📦 Checking Redis...")
-	if err := checkRedis(cfg.Redis.URL, cfg.Redis.Password); err != nil {
-		log.Fatalf("❌ Redis check failed: %v\n", err)
+	// Check Upstash Redis
+	fmt.Println("\n📦 Checking Upstash Redis...")
+	if err := checkUpstashRedis(cfg.Redis.UpstashRestURL, cfg.Redis.UpstashRestToken); err != nil {
+		log.Fatalf("❌ Upstash Redis check failed: %v\n", err)
 	}
 
 	// Summary
@@ -65,12 +65,12 @@ func checkPostgreSQL(dsn string) error {
 	return nil
 }
 
-func checkRedis(url, password string) error {
-	redisClient, err := cache.NewRedisClient(url, password)
+func checkUpstashRedis(restURL, token string) error {
+	upstashClient, err := cache.NewUpstashClient(restURL, token)
 	if err != nil {
 		return err
 	}
-	defer redisClient.Close()
+	defer upstashClient.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -78,26 +78,26 @@ func checkRedis(url, password string) error {
 	// Test SET
 	testKey := "health_check_test"
 	testValue := fmt.Sprintf("test_%d", time.Now().Unix())
-	if err := redisClient.Set(ctx, testKey, testValue, 10*time.Second); err != nil {
+	if err := upstashClient.Set(ctx, testKey, testValue, 10*time.Second); err != nil {
 		return fmt.Errorf("SET command failed: %w", err)
 	}
-	fmt.Println("  ✓ Redis SET command working")
+	fmt.Println("  ✓ Upstash SET command working")
 
 	// Test GET
-	retrieved, err := redisClient.Get(ctx, testKey)
+	retrieved, err := upstashClient.Get(ctx, testKey)
 	if err != nil {
 		return fmt.Errorf("GET command failed: %w", err)
 	}
 	if retrieved != testValue {
 		return fmt.Errorf("GET returned wrong value: expected %s, got %s", testValue, retrieved)
 	}
-	fmt.Println("  ✓ Redis GET command working")
+	fmt.Println("  ✓ Upstash GET command working")
 
 	// Test DEL
-	if err := redisClient.Del(ctx, testKey); err != nil {
+	if err := upstashClient.Del(ctx, testKey); err != nil {
 		return fmt.Errorf("DEL command failed: %w", err)
 	}
-	fmt.Println("  ✓ Redis DEL command working")
+	fmt.Println("  ✓ Upstash DEL command working")
 
 	return nil
 }
