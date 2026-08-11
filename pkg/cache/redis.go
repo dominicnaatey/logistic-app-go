@@ -17,15 +17,15 @@ type RedisClient struct {
 
 // NewRedisClient creates a new Redis client
 // For Upstash: Use the Redis URL format from Upstash console (not REST API)
-// Format: redis://default:password@endpoint.upstash.io:6379
-func NewRedisClient(url, password string) (*RedisClient, error) {
+// Format: redis://default:token@endpoint.upstash.io:6379
+func NewRedisClient(url, token string) (*RedisClient, error) {
 	opt, err := redis.ParseURL(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse Redis URL: %w", err)
 	}
 
-	if password != "" {
-		opt.Password = password
+	if token != "" {
+		opt.Password = token // Redis uses "Password" field, but Upstash calls it "token"
 	}
 
 	client := redis.NewClient(opt)
