@@ -50,12 +50,12 @@ Migrating from NestJS to Go for:
 ```bash
 # Required
 - Go 1.22+
-- Docker Desktop (for PostgreSQL + Redis)
+- Neon PostgreSQL account (free tier available at https://console.neon.tech)
 - Git
 
-# Optional (for full functionality)
-- PostgreSQL 15+ with PostGIS
-- Redis 7+
+# Optional (for local development)
+- Docker Desktop (for local PostgreSQL + Redis)
+- Redis (or use Upstash free tier)
 - Africa's Talking API account
 - Paystack/Flutterwave accounts
 ```
@@ -79,18 +79,21 @@ Migrating from NestJS to Go for:
    cp .env.example .env
    # Edit .env with your credentials
    ```
-
-4. **Start local services**
-   ```bash
-   # Start PostgreSQL + Redis
-   docker-compose up -d
    
-   # Wait for services to be ready (10-15 seconds)
-   # Then verify connections:
+   **Get Neon Database URL:**
+   - Go to https://console.neon.tech
+   - Create a project (or use existing)
+   - Copy the connection string (use the pooled connection)
+   - Paste into `.env` as `DATABASE_URL`
+   - See [docs/NEON-SETUP.md](NEON-SETUP.md) for detailed guide
+
+4. **Verify connections**
+   ```bash
    go run cmd/check/main.go
+   # Should show: ✓ PostgreSQL connected, ✓ PostGIS version, ✓ Redis connected
    ```
 
-5. **Run the server**
+5. **Start the server**
    ```bash
    go run cmd/server/main.go
    # Server starts on http://localhost:8080

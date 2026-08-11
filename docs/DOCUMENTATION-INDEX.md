@@ -53,8 +53,16 @@ This project maintains comprehensive, living documentation that evolves as we bu
    - Scaling strategy
    - Security considerations
 
+6. **[docs/NEON-SETUP.md](NEON-SETUP.md)** — Neon PostgreSQL setup
+   - Why Neon for this project
+   - Account setup and configuration
+   - PostGIS enablement
+   - Database branching guide
+   - Performance tips
+   - Troubleshooting
+
 ### Domain Understanding
-6. **[trucking-logistics-app-guide.md](../trucking-logistics-app-guide.md)** — Product requirements
+7. **[trucking-logistics-app-guide.md](../trucking-logistics-app-guide.md)** — Product requirements
    - User roles and needs
    - Domain-specific requirements
    - Cross-border considerations
@@ -65,20 +73,20 @@ This project maintains comprehensive, living documentation that evolves as we bu
 ## 📋 Planning & Roadmap
 
 ### Implementation Plan
-7. **[IMPLEMENTATION-PLAN.md](../IMPLEMENTATION-PLAN.md)** — Phases 0-5
+8. **[IMPLEMENTATION-PLAN.md](../IMPLEMENTATION-PLAN.md)** — Phases 0-5
    - Week-by-week breakdown
    - Foundation through GPS Tracking
    - Technical tasks
    - Deliverables
 
-8. **[IMPLEMENTATION-PLAN-PART2.md](../IMPLEMENTATION-PLAN-PART2.md)** — Phases 6-12
+9. **[IMPLEMENTATION-PLAN-PART2.md](../IMPLEMENTATION-PLAN-PART2.md)** — Phases 6-12
    - Payments through Launch
    - Testing and hardening
    - Deployment strategy
    - Pilot launch
 
 ### Migration Guide
-9. **[GO-MIGRATION-GUIDE.md](../GO-MIGRATION-GUIDE.md)** — NestJS → Go migration
+10. **[GO-MIGRATION-GUIDE.md](../GO-MIGRATION-GUIDE.md)** — NestJS → Go migration
    - Current vs target tech stack
    - API equivalents
    - Code examples
@@ -89,14 +97,14 @@ This project maintains comprehensive, living documentation that evolves as we bu
 ## 📝 Release & History
 
 ### Version History
-10. **[CHANGELOG.md](../CHANGELOG.md)** — Version history
+11. **[CHANGELOG.md](../CHANGELOG.md)** — Version history
     - What changed in each release
     - Breaking changes
     - New features
     - Bug fixes
 
 ### Phase Completion
-11. **[PHASE-0-COMPLETE.md](../PHASE-0-COMPLETE.md)** — Phase 0 summary
+12. **[PHASE-0-COMPLETE.md](../PHASE-0-COMPLETE.md)** — Phase 0 summary
     - What was built
     - How to use it
     - Next steps
