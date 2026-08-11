@@ -75,8 +75,26 @@ This project maintains comprehensive, living documentation that evolves as we bu
    - Performance tips
    - Troubleshooting
 
+9. **[docs/R2-SETUP.md](R2-SETUP.md)** — Cloudflare R2 storage setup
+   - Why R2 for this project
+   - Account setup and bucket creation
+   - Access key management
+   - Folder structure recommendations
+   - Cost analysis
+   - Security best practices
+   - Troubleshooting
+
+10. **[docs/JWT-SETUP.md](JWT-SETUP.md)** — JWT authentication setup ⭐ NEW
+   - JWT overview and benefits
+   - Secure key generation
+   - Configuration guide
+   - Token generation and verification
+   - Security best practices
+   - Testing guide
+   - Common issues and solutions
+
 ### Domain Understanding
-9. **[trucking-logistics-app-guide.md](../trucking-logistics-app-guide.md)** — Product requirements
+11. **[trucking-logistics-app-guide.md](../trucking-logistics-app-guide.md)** — Product requirements
    - User roles and needs
    - Domain-specific requirements
    - Cross-border considerations
