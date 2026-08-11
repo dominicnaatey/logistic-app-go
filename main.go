@@ -1,20 +1,13 @@
 package main
 
 import (
-    "github.com/gin-gonic/gin"
+    "logistic-app-go/routes"
 )
 
 func main() {
-    // Create a default Gin router
-    r := gin.Default()
-
-    // Define a test route
-    r.GET("/ping", func(c *gin.Context) {
-        c.JSON(200, gin.H{
-            "message": "pong",
-        })
-    })
-
-    // Run the server (listens on port 8080 by default)
-    r.Run() 
+    // Set up the routes defined in the routes package
+    r := routes.SetupRouter()
+    
+    // Run the server
+    r.Run(":8080")
 }
