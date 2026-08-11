@@ -58,6 +58,13 @@ REDIS_PASSWORD=AbCd...XyZ
 - Pub/sub works perfectly
 - Connection pooling
 
+**Connection format:**
+```env
+# From Upstash console, copy the "Redis URL"
+REDIS_URL=redis://default:AbCd...XyZ@endpoint.upstash.io:6379
+REDIS_TOKEN=AbCd...XyZ  # Same as password in URL
+```
+
 #### Option B: REST API
 **Best for:** Serverless functions, simple use cases
 
@@ -80,8 +87,8 @@ UPSTASH_REDIS_REST_TOKEN=AbCd...XyZ
 2. **Update `.env`**
    ```env
    # Upstash Redis (recommended)
-   REDIS_URL=redis://default:your-password@endpoint.upstash.io:6379
-   REDIS_PASSWORD=your-password
+   REDIS_URL=redis://default:your-token@endpoint.upstash.io:6379
+   REDIS_TOKEN=your-token
    
    # Or use REST API (alternative)
    # UPSTASH_REDIS_REST_URL=https://endpoint.upstash.io
@@ -118,7 +125,7 @@ redis://default:AbCdEfGh1234567890@gusc1-worthy-fish-12345.upstash.io:6379
          ^^^^^^^^                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
          username                 endpoint (unique to your database)
                 ^^^^^^^^^^^^^^^^^^
-                password (from console)
+                token (from console)
 ```
 
 **With TLS (recommended):**
@@ -306,11 +313,11 @@ REDIS_URL=rediss://default:password@endpoint.upstash.io:6379
 REDIS_URL=redis://localhost:6379
 ```
 
-### 2. Rotate Passwords Regularly
+### 2. Rotate Tokens Regularly
 
 **Via Upstash Console:**
 1. Database → Settings → Reset Password
-2. Update `.env` immediately
+2. Update `.env` with new `REDIS_TOKEN` immediately
 3. Restart server
 
 **Best practice:** Rotate every 90 days.
@@ -358,7 +365,7 @@ REDIS_URL=redis://localhost:6379
 
 **Connect to Upstash:**
 ```bash
-redis-cli -u redis://default:password@endpoint.upstash.io:6379 --tls
+redis-cli -u redis://default:your-token@endpoint.upstash.io:6379 --tls
 ```
 
 **Common commands:**
@@ -384,7 +391,7 @@ INFO memory
 **"Connection timeout"**
 - Check firewall/VPN blocking Upstash IPs
 - Verify TLS is enabled (use `rediss://`)
-- Check password is correct
+- Check token is correct in `.env`
 
 **"Command not supported"**
 - Upstash supports 200+ Redis commands
@@ -461,7 +468,7 @@ docker-compose up -d
 Update `.env`:
 ```env
 REDIS_URL=redis://localhost:6379
-REDIS_PASSWORD=
+REDIS_TOKEN=
 ```
 
 **Trade-offs:**

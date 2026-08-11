@@ -347,12 +347,12 @@ func TestCreateRating(t *testing.T) {
 GO_ENV=development          # development | production
 PORT=8080                   # HTTP port
 
-# Database
-DATABASE_URL=postgresql://user:pass@host:5432/db?sslmode=disable
+# Database (Neon PostgreSQL)
+DATABASE_URL=postgresql://user:pass@host:5432/db?sslmode=require
 
-# Redis
-REDIS_URL=redis://localhost:6379
-REDIS_PASSWORD=             # Optional
+# Redis (Upstash)
+REDIS_URL=redis://default:token@endpoint.upstash.io:6379
+REDIS_TOKEN=your-token      # Upstash calls it "token"
 
 # JWT
 JWT_SECRET=your-secret-key-min-32-chars
