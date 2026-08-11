@@ -24,16 +24,18 @@ go mod tidy
 
 # Set up environment
 cp .env.example .env
-# Edit .env with your Neon database credentials from https://console.neon.tech
+# Edit .env with your credentials:
+# - Neon database URL from https://console.neon.tech
+# - Upstash Redis URL from https://console.upstash.com
 
-# Option 1: Use Neon (recommended for cloud development)
-# - Get your DATABASE_URL from Neon console
-# - PostGIS is already enabled on Neon
-# - No local setup needed
+# Option 1: Use Cloud Services (recommended)
+# - Neon PostgreSQL (PostGIS pre-enabled)
+# - Upstash Redis (free tier: 10K commands/day)
+# - No local setup needed, works immediately
 
 # Option 2: Use local Docker (for offline development)
 docker-compose up -d
-# Update DATABASE_URL in .env to use localhost
+# Update .env to use localhost URLs
 
 # Run connection health check
 go run cmd/check/main.go
@@ -81,7 +83,7 @@ Current structure includes:
 | Area | Choice | Reason |
 |---|---|---|
 | Database | **Neon PostgreSQL + PostGIS** | Serverless, auto-scaling, PostGIS enabled, database branching |
-| Cache | Redis (Upstash) | OTP storage, live location cache, pub/sub |
+| Cache | **Upstash Redis** | Serverless, global edge network, pay-per-request, REST + native Redis |
 | Queue | asynq | Background jobs (matching, notifications) |
 | Payments | Paystack + Flutterwave | Mobile money support, cross-border |
 | Storage | Cloudflare R2 | KYC docs, customs documents |
