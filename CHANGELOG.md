@@ -17,6 +17,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.1] - 2026-08-11
+
+### Added - JWT Authentication & R2 Storage
+
+#### Authentication
+- JWT token generation and verification (`pkg/auth/jwt.go`)
+- JWT Manager with HMAC-SHA256 signing
+- Claims structure: User ID, Email, Role, Standard JWT claims
+- Token refresh functionality
+- Cryptographic key generator (`cmd/keygen/main.go`)
+- JWT configuration validation (minimum 32 characters)
+- JWT testing in health check CLI
+
+#### Cloud Storage
+- **Cloudflare R2 integration** with S3-compatible API (`pkg/storage/r2.go`)
+- R2 client using AWS SDK v2
+- Operations: Upload, GetPresignedURL, Delete, List, TestConnection
+- R2 bucket accessibility check in health check CLI
+- Configurable public URL for file access
+
+#### Documentation
+- JWT Setup Guide (`docs/JWT-SETUP.md`)
+- Security best practices for JWT
+- Token generation and verification examples
+- Cloudflare R2 Setup Guide (`docs/R2-SETUP.md`)
+- R2 folder structure recommendations
+- Cost analysis and security practices
+
+#### Dependencies
+- `github.com/golang-jwt/jwt/v5` v5.3.1 - JWT implementation
+- `github.com/aws/aws-sdk-go-v2` - AWS SDK for R2 (S3-compatible)
+- `github.com/aws/aws-sdk-go-v2/service/s3` - S3 service client
+- `github.com/aws/aws-sdk-go-v2/credentials` - Static credentials provider
+
+### Changed
+- Health check CLI now tests JWT functionality
+- Health check CLI includes optional R2 testing
+- `.env.example` updated with JWT key generation instructions
+- Configuration validation includes JWT secret length check
+
+### Security
+- Cryptographically secure JWT secret generation
+- JWT secret must be minimum 32 characters
+- Token expiry configuration (default: 7 days)
+- Secure R2 credential handling
+
+---
+
 ## [0.1.0] - 2026-08-11
 
 ### Added - Phase 0: Foundation & Setup ✅
