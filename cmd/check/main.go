@@ -9,6 +9,7 @@ import (
 	"logistic-app-go/pkg/cache"
 	"logistic-app-go/pkg/config"
 	"logistic-app-go/pkg/database"
+	"logistic-app-go/pkg/storage"
 )
 
 func main() {
@@ -33,8 +34,16 @@ func main() {
 		log.Fatalf("❌ Upstash Redis check failed: %v\n", err)
 	}
 
+	// Check Cloudflare R2
+	fmt.Println("\n☁️  Checking Cloudflare R2...")
+	if err := checkR2(cfg.Storage); err != nil {
+		// R2 is optional for Phase 0, just warn
+		fmt.Printf("⚠️  R2 check skipped: %v\n", err)
+		fmt.Println("  (R2 will be needed in Phase 1 for file uploads)")
+	}
+
 	// Summary
-	fmt.Println("\n✅ All connections successful!")
+	fmt.Println("\n✅ All required connections successful!")
 	fmt.Println("\nYou can now start the server with: go run cmd/server/main.go")
 }
 
@@ -98,6 +107,42 @@ func checkUpstashRedis(restURL, token string) error {
 		return fmt.Errorf("DEL command failed: %w", err)
 	}
 	fmt.Println("  ✓ Upstash DEL command working")
+
+	return nil
+}
+
+func checkR2(storageConfig config.StorageConfig) error {
+	// Check if R2 is configured
+	if storageConfig.R2AccountID == "" || storageConfig.R2AccessKeyID == "" || storageConfig.R2SecretAccessKey == "" {
+		return fmt.Errorf("R2 credentials not configured (optional for Phase 0)")
+	}
+
+	if storageConfig.R2BucketName == "" {
+		return fmt.Errorf("R2 bucket name not configured")
+	}
+
+	// Create R2 client
+	r2Client, err := storage.NewR2Client(storage.R2Config{
+		AccountID:   storageConfig.R2AccountID,
+		AccessKeyID: storageConfig.R2AccessKeyID,
+		SecretKey:   storageConfig.R2SecretAccessKey,
+		BucketName:  storageConfig.R2BucketName,
+		PublicURL:   storageConfig.R2PublicURL,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Test connection
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := r2Client.TestConnection(ctx); err != nil {
+		return fmt.Errorf("R2 connection test failed: %w", err)
+	}
+
+	fmt.Printf("  ✓ R2 bucket '%s' accessible\n", storageConfig.R2BucketName)
+	fmt.Println("  ✓ R2 connection successful")
 
 	return nil
 }
