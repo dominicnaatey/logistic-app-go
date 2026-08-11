@@ -10,11 +10,14 @@ import (
 )
 
 // RedisClient wraps the Redis client
+// Supports both Upstash (serverless) and traditional Redis
 type RedisClient struct {
 	client *redis.Client
 }
 
 // NewRedisClient creates a new Redis client
+// For Upstash: Use the Redis URL format from Upstash console (not REST API)
+// Format: redis://default:password@endpoint.upstash.io:6379
 func NewRedisClient(url, password string) (*RedisClient, error) {
 	opt, err := redis.ParseURL(url)
 	if err != nil {
