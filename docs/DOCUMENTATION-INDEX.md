@@ -33,8 +33,16 @@ This project maintains comprehensive, living documentation that evolves as we bu
    - Testing examples
    - Environment variables
 
+4. **[docs/GIT-WORKFLOW.md](GIT-WORKFLOW.md)** — Git branching and workflow ⭐ NEW
+   - Branch structure (main, dev, feature)
+   - Feature branch workflow
+   - Commit conventions
+   - Pull request process
+   - Merge conflict resolution
+   - Release management
+
 ### For Contributors
-4. **[CONTRIBUTING.md](../CONTRIBUTING.md)** — How to contribute
+5. **[CONTRIBUTING.md](../CONTRIBUTING.md)** — How to contribute
    - Code standards
    - Commit guidelines
    - Pull request process
