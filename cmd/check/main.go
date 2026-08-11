@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"logistic-app-go/pkg/auth"
 	"logistic-app-go/pkg/cache"
 	"logistic-app-go/pkg/config"
 	"logistic-app-go/pkg/database"
@@ -32,6 +33,12 @@ func main() {
 	fmt.Println("\n📦 Checking Upstash Redis...")
 	if err := checkUpstashRedis(cfg.Redis.UpstashRestURL, cfg.Redis.UpstashRestToken); err != nil {
 		log.Fatalf("❌ Upstash Redis check failed: %v\n", err)
+	}
+
+	// Check JWT
+	fmt.Println("\n🔐 Checking JWT Configuration...")
+	if err := checkJWT(cfg.JWT); err != nil {
+		log.Fatalf("❌ JWT check failed: %v\n", err)
 	}
 
 	// Check Cloudflare R2
@@ -143,6 +150,48 @@ func checkR2(storageConfig config.StorageConfig) error {
 
 	fmt.Printf("  ✓ R2 bucket '%s' accessible\n", storageConfig.R2BucketName)
 	fmt.Println("  ✓ R2 connection successful")
+
+	return nil
+}
+
+func checkJWT(jwtConfig config.JWTConfig) error {
+	// Create JWT manager
+	jwtManager, err := auth.NewJWTManager(jwtConfig.Secret, jwtConfig.ExpiresIn)
+	if err != nil {
+		return err
+	}
+
+	// Test token generation
+	testUserID := uint(1)
+	testEmail := "test@example.com"
+	testRole := "admin"
+
+	token, err := jwtManager.Generate(testUserID, testEmail, testRole)
+	if err != nil {
+		return fmt.Errorf("token generation failed: %w", err)
+	}
+	fmt.Printf("  ✓ JWT secret key validated (%d chars)\n", len(jwtConfig.Secret))
+	fmt.Println("  ✓ Token generation working")
+
+	// Test token verification
+	claims, err := jwtManager.Verify(token)
+	if err != nil {
+		return fmt.Errorf("token verification failed: %w", err)
+	}
+
+	// Verify claims
+	if claims.UserID != testUserID {
+		return fmt.Errorf("user ID mismatch: expected %d, got %d", testUserID, claims.UserID)
+	}
+	if claims.Email != testEmail {
+		return fmt.Errorf("email mismatch: expected %s, got %s", testEmail, claims.Email)
+	}
+	if claims.Role != testRole {
+		return fmt.Errorf("role mismatch: expected %s, got %s", testRole, claims.Role)
+	}
+	fmt.Println("  ✓ Token verification working")
+	fmt.Println("  ✓ Claims validation working")
+	fmt.Printf("  ✓ Token expiry: %v\n", jwtConfig.ExpiresIn)
 
 	return nil
 }
