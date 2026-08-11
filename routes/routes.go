@@ -1,7 +1,7 @@
 package routes
 
 import (
-    "://github.com"
+    "github.com/gin-gonic/gin"
     "logistic-app-go/controllers"
 )
 

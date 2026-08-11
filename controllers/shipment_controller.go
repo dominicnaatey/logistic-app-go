@@ -2,7 +2,7 @@ package controllers
 
 import (
     "net/http"
-    "://github.com"
+    "github.com/gin-gonic/gin"
     "logistic-app-go/models"
 )
 
