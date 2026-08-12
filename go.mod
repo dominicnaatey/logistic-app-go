@@ -8,6 +8,8 @@ require (
 )
 
 require (
+	github.com/AfricasTalkingLtd/africastalking-go v0.0.0-20190314130600-8bb53dce16a2 // indirect
+	github.com/AndroidStudyOpenSource/africastalking-go v0.0.0-20200515172509-94a151ad63fe // indirect
 	github.com/aws/aws-sdk-go-v2 v1.43.5 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.17 // indirect
 	github.com/aws/aws-sdk-go-v2/config v1.32.36 // indirect

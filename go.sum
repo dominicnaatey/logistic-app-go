@@ -1,3 +1,7 @@
+github.com/AfricasTalkingLtd/africastalking-go v0.0.0-20190314130600-8bb53dce16a2 h1:wp04feJXkPgcTQCnjdm5/9Ru8YF4A8YwuULHZB9RJQ8=
+github.com/AfricasTalkingLtd/africastalking-go v0.0.0-20190314130600-8bb53dce16a2/go.mod h1:ygJljoO3Y36QIzOIgYWsKxGhvSuT+6VFhxX8rpbGwVg=
+github.com/AndroidStudyOpenSource/africastalking-go v0.0.0-20200515172509-94a151ad63fe h1:uXPOrFHjkAP3NgAfOXgDwuRa3nkX3w71jT7zYGJFvFk=
+github.com/AndroidStudyOpenSource/africastalking-go v0.0.0-20200515172509-94a151ad63fe/go.mod h1:1oj0QW+1duBl8Ono/Gg2NhXpu8fAqFrquBejPq2qy14=
 github.com/aws/aws-sdk-go-v2 v1.43.5 h1:yKT5GYnFWhuDo+DqKvE5ZPwVn3RjC4MAeBtZGlh6AVM=
 github.com/aws/aws-sdk-go-v2 v1.43.5/go.mod h1:wZjAJppCntyOGgVSmgVTfDyRJK5PHOasO6Wsy8U7Axk=
 github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.17 h1:mn+Vxb9zgz/FE/yDTcFim3DZ1qpcrxR+qBQkBrl6bzA=
