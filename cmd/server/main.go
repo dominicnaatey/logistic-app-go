@@ -36,6 +36,11 @@ func main() {
 	}
 	defer database.Close(db)
 
+	// Run database migrations
+	if err := database.Migrate(db); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+
 	// Initialize Upstash Redis (REST API)
 	upstashClient, err := cache.NewUpstashClient(cfg.Redis.UpstashRestURL, cfg.Redis.UpstashRestToken)
 	if err != nil {
