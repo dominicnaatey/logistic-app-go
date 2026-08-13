@@ -95,12 +95,12 @@ go run cmd/check/main.go
 **Key Generation:**
 ```bash
 go run cmd/keygen/main.go
-# Output: mTS294lGzRb6PnhmZys7tnABWCSSf0jBQ985wvUp9aY=
+# Output: <your-generated-secret-will-appear-here>
 ```
 
 **Environment Configuration:**
 ```env
-JWT_SECRET=mTS294lGzRb6PnhmZys7tnABWCSSf0jBQ985wvUp9aY=
+JWT_SECRET=<paste-your-generated-secret-here>
 JWT_EXPIRES_IN=168h  # 7 days
 ```
 
