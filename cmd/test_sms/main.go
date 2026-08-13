@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	fmt.Println("🧪 Testing SMS Service (Africa's Talking)...\n")
+	fmt.Println("🧪 Testing SMS Service (Africa's Talking)...")
+	fmt.Println()
 
 	cfg, err := config.Load()
 	if err != nil {

@@ -11,7 +11,8 @@ import (
 )
 
 func main() {
-	fmt.Println("🧪 Testing User Model against Neon PostgreSQL...\n")
+	fmt.Println("🧪 Testing User Model against Neon PostgreSQL...")
+	fmt.Println()
 
 	// Load config (.env)
 	cfg, err := config.Load()

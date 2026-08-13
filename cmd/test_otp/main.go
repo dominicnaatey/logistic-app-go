@@ -12,7 +12,8 @@ import (
 )
 
 func main() {
-	fmt.Println("🧪 Testing OTP Service against Upstash Redis...\n")
+	fmt.Println("🧪 Testing OTP Service against Upstash Redis...")
+	fmt.Println()
 
 	cfg, err := config.Load()
 	if err != nil {
@@ -24,7 +25,8 @@ func main() {
 		log.Fatalf("❌ Redis connection failed: %v", err)
 	}
 	defer redisClient.Close()
-	fmt.Println("✓ Connected to Upstash Redis\n")
+	fmt.Println("✓ Connected to Upstash Redis")
+	fmt.Println()
 
 	otpSvc := auth.NewOTPService(redisClient)
 	ctx := context.Background()

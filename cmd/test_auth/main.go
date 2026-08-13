@@ -22,7 +22,8 @@ import (
 )
 
 func main() {
-	fmt.Println("🧪 Testing Auth Handlers (send-otp → verify-otp → /me)...\n")
+	fmt.Println("🧪 Testing Auth Handlers (send-otp → verify-otp → /me)...")
+	fmt.Println()
 
 	cfg, err := config.Load()
 	if err != nil {

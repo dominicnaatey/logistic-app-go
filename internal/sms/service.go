@@ -20,8 +20,8 @@ const (
 // In sandbox mode messages are NOT sent to real phones — they appear
 // in the AT simulator at https://simulator.africastalking.com
 type Service struct {
-	client   atSMS.Service
-	senderID string  // optional shortcode / alphanumeric sender ID
+	client    atSMS.Service
+	senderID  string // optional shortcode / alphanumeric sender ID
 	isSandbox bool
 }
 

@@ -18,7 +18,8 @@ import (
 )
 
 func main() {
-	fmt.Println("🧪 Testing JWT Middleware...\n")
+	fmt.Println("🧪 Testing JWT Middleware...")
+	fmt.Println()
 
 	cfg, err := config.Load()
 	if err != nil {

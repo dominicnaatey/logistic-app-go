@@ -15,7 +15,8 @@ import (
 )
 
 func main() {
-	fmt.Println("🔍 Checking external service connections...\n")
+	fmt.Println("🔍 Checking external service connections...")
+	fmt.Println()
 
 	// Load configuration
 	cfg, err := config.Load()

@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	internalAuth "logistic-app-go/pkg/auth"
-	"logistic-app-go/pkg/response"
 	"logistic-app-go/internal/sms"
 	"logistic-app-go/internal/user"
+	internalAuth "logistic-app-go/pkg/auth"
+	"logistic-app-go/pkg/response"
 )
 
 // Handler holds all dependencies needed by the auth HTTP handlers.
