@@ -11,17 +11,18 @@ import (
 )
 
 // Handler holds all dependencies needed by the auth HTTP handlers.
+// All fields are interfaces — every dependency can be swapped or mocked.
 type Handler struct {
-	otpSvc     *OTPService
-	smsSvc     *sms.Service
-	userSvc    user.Service
+	otpSvc     *OTPService  // uses cache.Cache internally — swap cache without changing this
+	smsSvc     sms.Sender   // interface — swap AT for Twilio/SNS without touching this file
+	userSvc    user.Service // interface — swap GORM impl without touching this file
 	jwtManager *internalAuth.JWTManager
 }
 
 // NewHandler creates a new auth Handler with all required dependencies.
 func NewHandler(
 	otpSvc *OTPService,
-	smsSvc *sms.Service,
+	smsSvc sms.Sender,
 	userSvc user.Service,
 	jwtManager *internalAuth.JWTManager,
 ) *Handler {
@@ -85,7 +86,7 @@ type VerifyOTPRequest struct {
 // @Router   /auth/send-otp [post]
 //
 // SendOTP validates the request, enforces rate limiting, generates a
-// 6-digit code, stores it in Redis, and delivers it via Africa's Talking SMS.
+// 6-digit code, stores it in Redis, and delivers it via SMS.
 func (h *Handler) SendOTP(c *gin.Context) {
 	var req SendOTPRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -110,7 +111,7 @@ func (h *Handler) SendOTP(c *gin.Context) {
 		return
 	}
 
-	// Send via SMS
+	// Send via SMS (Africa's Talking, Twilio, or any sms.Sender)
 	if err := h.smsSvc.SendOTP(req.Phone, code); err != nil {
 		// SMS failure should not expose internal details to client
 		response.Error(c, http.StatusServiceUnavailable, "failed to send SMS, please try again")
@@ -132,7 +133,7 @@ func (h *Handler) SendOTP(c *gin.Context) {
 // @Success  200
 // @Router   /auth/verify-otp [post]
 //
-// VerifyOTP checks the submitted code against Redis, creates or fetches
+// VerifyOTP checks the submitted code against the cache, creates or fetches
 // the user record, and returns a signed JWT.
 func (h *Handler) VerifyOTP(c *gin.Context) {
 	var req VerifyOTPRequest
@@ -141,14 +142,13 @@ func (h *Handler) VerifyOTP(c *gin.Context) {
 		return
 	}
 
-	// Verify OTP against Redis (single-use, auto-deleted on match)
+	// Verify OTP (single-use, auto-deleted on match)
 	if err := h.otpSvc.Verify(c.Request.Context(), req.Phone, req.Code); err != nil {
 		response.Error(c, http.StatusUnauthorized, err.Error())
 		return
 	}
 
-	// We need the role to create the user if this is their first login.
-	// Read it from query param (set during send-otp step) or default to shipper.
+	// Read role from query param or default to shipper
 	role := c.Query("role")
 	if role == "" {
 		role = user.RoleShipper
@@ -182,9 +182,9 @@ func (h *Handler) VerifyOTP(c *gin.Context) {
 	}
 
 	c.JSON(status, gin.H{
-		"success":  true,
-		"token":    token,
-		"is_new":   isNew,
+		"success": true,
+		"token":   token,
+		"is_new":  isNew,
 		"user": gin.H{
 			"id":         u.ID,
 			"phone":      u.Phone,

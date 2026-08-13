@@ -24,18 +24,19 @@ const (
 	otpLength = 6
 )
 
-// OTPService handles OTP generation, storage and verification via Redis.
+// OTPService handles OTP generation, storage and verification via a cache backend.
 // Redis key scheme:
 //
 //	otp:{phone}       → the 6-digit code, expires after otpTTL
 //	otp:rate:{phone}  → request counter, expires after otpRateTTL
 type OTPService struct {
-	cache *cache.UpstashClient
+	cache cache.Cache
 }
 
-// NewOTPService creates a new OTPService backed by Upstash Redis.
-func NewOTPService(cache *cache.UpstashClient) *OTPService {
-	return &OTPService{cache: cache}
+// NewOTPService creates a new OTPService backed by any cache.Cache implementation.
+// In production this is Upstash Redis; in tests it can be an in-memory stub.
+func NewOTPService(c cache.Cache) *OTPService {
+	return &OTPService{cache: c}
 }
 
 // GenerateAndStore creates a new 6-digit OTP, stores it in Redis with a
