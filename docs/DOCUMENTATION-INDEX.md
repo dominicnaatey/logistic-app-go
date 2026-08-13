@@ -20,29 +20,29 @@ This project maintains comprehensive, living documentation that evolves as we bu
 **Start here to get productive quickly:**
 
 1. **[README.md](../README.md)** — Project overview, quick start, current status
-2. **[docs/DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md)** — ⭐ **Comprehensive guide**
+2. **[docs/DEVELOPER-GUIDE.md](DEVELOPER-GUIDE.md)** — ⭐ **Comprehensive guide** *(Updated: Phase 1)*
    - First-time setup instructions
    - Project structure explained
+   - Authentication system (OTP + JWT)
+   - API reference (Phase 1 endpoints)
    - Development workflow
    - Testing strategy
    - Troubleshooting
 
 3. **[docs/QUICK-REFERENCE.md](QUICK-REFERENCE.md)** — Common commands and patterns
-   - Daily commands you'll use
-   - Code patterns and templates
-   - Testing examples
-   - Environment variables
 
-4. **[docs/GIT-WORKFLOW.md](GIT-WORKFLOW.md)** — Git branching and workflow ⭐ NEW
+4. **[docs/GIT-WORKFLOW.md](GIT-WORKFLOW.md)** — Git branching and workflow
    - Branch structure (main, dev, feature)
-   - Feature branch workflow
    - Commit conventions
    - Pull request process
-   - Merge conflict resolution
-   - Release management
+
+5. **[docs/PROJECT-CONTEXT-LOG.md](PROJECT-CONTEXT-LOG.md)** — Full project history *(Updated: Phase 1)*
+   - All sessions condensed
+   - Current project state
+   - For AI assistant handoff
 
 ### For Contributors
-5. **[CONTRIBUTING.md](../CONTRIBUTING.md)** — How to contribute
+6. **[CONTRIBUTING.md](../CONTRIBUTING.md)** — How to contribute
    - Code standards
    - Commit guidelines
    - Pull request process

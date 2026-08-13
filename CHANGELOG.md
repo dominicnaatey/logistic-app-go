@@ -9,11 +9,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
-- Phase 1: Authentication & User Management
 - Phase 2: Core Domain Models (Fleet, Trucks, Drivers)
 - Phase 3: Load & Trip System
 - Phase 4: Matching Engine
 - Phase 5: Live GPS Tracking
+
+---
+
+## [0.2.0] - 2026-08-13
+
+### Added — Phase 1: Authentication & User Management ✅
+
+#### User Model
+- `User` GORM struct with UUID primary key, phone (E.164, unique), role, name, language (en/fr), KYC status, soft delete
+- 5 role constants: `shipper`, `driver`, `fleet_admin`, `owner_operator`, `admin`
+- Helper methods: `IsDriver()`, `CanAcceptLoads()`, `IsKYCApproved()`
+- GORM `BeforeCreate` hook for UUID auto-assignment
+- `pkg/database/migrate.go` — central auto-migration runner
+- `migrations/001_create_users.sql` — raw SQL reference migration
+
+#### OTP Service (`internal/auth/otp_service.go`)
+- Cryptographically secure 6-digit code (crypto/rand, zero-padded)
+- Redis key scheme: `otp:{phone}` (10-min TTL), `otp:rate:{phone}` (rate counter)
+- Rate limiting: max 3 requests per phone per 10-minute window
+- Single-use: code deleted from Redis on successful verification
+
+#### SMS Service (`internal/sms/service.go`)
+- Africa's Talking Go SDK wrapper, auto-detects sandbox vs production
+- `SendOTP`, `SendWelcome` (bilingual en/fr), `SendTripAssignment`
+
+#### JWT Middleware (`internal/auth/middleware.go`)
+- Updated claims to `uuid.UUID` + `phone` (replacing old `uint` + `email`)
+- `JWTMiddleware` — validates Bearer token, attaches claims to Gin context
+- `RequireRoles(...roles)` — composable RBAC middleware
+- `GetClaims(c)` — typed claims extractor
+
+#### User Repository & Service
+- `Repository` interface with GORM implementation
+- `Service` interface: `FindOrCreate`, `GetByID`, `UpdateProfile`
+
+#### Auth Handlers
+- `POST /api/v1/auth/send-otp`
+- `POST /api/v1/auth/verify-otp`
+- `GET  /api/v1/auth/me`
+
+#### Integration Tests (40+ assertions, all live infrastructure)
+- `cmd/test_user`, `cmd/test_otp`, `cmd/test_sms`, `cmd/test_jwt_middleware`, `cmd/test_auth`
+
+### Changed
+- `pkg/auth/jwt.go` — claims: `UserID uuid.UUID` + `Phone` (was `uint` + `Email`)
+- `cmd/server/main.go` — fully rewired with all Phase 1 services
+
+### Dependencies Added
+- `github.com/google/uuid` v1.6.0
+- `github.com/AfricasTalkingLtd/africastalking-go`
 
 ---
 

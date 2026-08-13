@@ -1,550 +1,785 @@
 # Developer Guide
-**Cross-Border Trucking Logistics Platform - Go Backend**
+**Cross-Border Trucking Logistics Platform — Go Backend**
 
-Last Updated: 2026-08-11 | Phase: 0 (Foundation) Complete
+Last Updated: 2026-08-13 | Phase 1 (Authentication) Complete
 
 ---
 
 ## Table of Contents
 
-1. [Project Overview](#project-overview)
-2. [Getting Started](#getting-started)
-3. [Project Structure](#project-structure)
-4. [Architecture & Design Principles](#architecture--design-principles)
-5. [Development Workflow](#development-workflow)
-6. [Database & Migrations](#database--migrations)
-7. [Testing Strategy](#testing-strategy)
-8. [Deployment](#deployment)
-9. [Troubleshooting](#troubleshooting)
+1. [Project Overview](#1-project-overview)
+2. [Getting Started](#2-getting-started)
+3. [Project Structure](#3-project-structure)
+4. [Architecture & Design Principles](#4-architecture--design-principles)
+5. [Authentication System](#5-authentication-system)
+6. [Development Workflow](#6-development-workflow)
+7. [Database & Migrations](#7-database--migrations)
+8. [Testing Strategy](#8-testing-strategy)
+9. [API Reference](#9-api-reference)
+10. [Deployment](#10-deployment)
+11. [Troubleshooting](#11-troubleshooting)
 
 ---
 
-## Project Overview
+## 1. Project Overview
 
 ### What We're Building
-A high-performance backend for a cross-border freight marketplace connecting shippers with truck fleets and independent operators across Mali ↔ Ghana. Think "Uber for long-haul trucking" with smart instant matching, live GPS tracking, and mobile money payments.
+A high-performance backend for a cross-border freight marketplace connecting shippers with truck fleets and independent operators across Mali ↔ Ghana. Think "Uber for long-haul trucking" — smart instant matching, live GPS tracking, mobile money payments, and offline-first mobile apps.
 
 ### Why Go?
-Migrating from NestJS to Go for:
+Migrated from NestJS for:
 - **10x faster** request throughput
 - **5x lower** memory usage
 - **Better concurrency** for real-time GPS tracking
-- **Simpler deployment** (single binary)
+- **Single binary** deployment
 
 ### Tech Stack
 | Component | Technology | Purpose |
-|---|---|---|
+|-----------|-----------|---------|
 | Framework | Gin | HTTP routing and middleware |
-| Database | PostgreSQL + PostGIS | Relational data + geospatial queries |
-| Cache | Redis | OTP storage, live location cache, pub/sub |
-| Queue | asynq | Background jobs (matching, notifications) |
-| Storage | Cloudflare R2 | KYC docs, customs documents |
-| SMS | Africa's Talking | OTP delivery |
-| Payments | Paystack + Flutterwave | Mobile money, cross-border |
+| Database | Neon PostgreSQL + PostGIS | Relational data + geospatial queries |
+| Cache | Upstash Redis (REST) | OTP storage, rate limiting, live location cache |
+| Storage | Cloudflare R2 | KYC docs, customs documents, proof of delivery |
+| SMS | Africa's Talking | OTP delivery, trip notifications |
+| Auth | JWT (HS256) + OTP | Phone-based, stateless authentication |
+| Payments | Paystack + Flutterwave | Mobile money, cross-border (Phase 3+) |
 
 ---
 
-## Getting Started
+## 2. Getting Started
 
 ### Prerequisites
 ```bash
 # Required
 - Go 1.22+
-- Neon PostgreSQL account (free tier available at https://console.neon.tech)
+- A Neon PostgreSQL account (free at https://console.neon.tech)
+- An Upstash Redis account (free at https://console.upstash.com)
+- A Cloudflare R2 bucket
+- Africa's Talking API account (sandbox is free)
 - Git
-
-# Optional (for local development)
-- Docker Desktop (for local PostgreSQL + Redis)
-- Redis (or use Upstash free tier)
-- Africa's Talking API account
-- Paystack/Flutterwave accounts
 ```
 
 ### First-Time Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone <repo-url>
-   cd logistic-app-go
-   ```
+**1. Clone and install dependencies**
+```bash
+git clone https://github.com/dominicnaatey/logistic-app-go.git
+cd logistic-app-go
+git checkout dev   # all active development is here
+go mod download
+```
 
-2. **Install dependencies**
-   ```bash
-   go mod download
-   # Or use: make install
-   ```
+**2. Configure environment**
+```bash
+cp .env.example .env
+# Open .env and fill in your credentials
+```
 
-3. **Set up environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your credentials
-   ```
-   
-   **Get Neon Database URL:**
-   - Go to https://console.neon.tech
-   - Create a project (or use existing)
-   - Copy the connection string (use the pooled connection)
-   - Paste into `.env` as `DATABASE_URL`
-   - See [docs/NEON-SETUP.md](NEON-SETUP.md) for detailed guide
+Required `.env` values:
+```env
+DATABASE_URL=postgresql://...         # Neon connection string
+UPSTASH_REDIS_REST_URL=https://...
+UPSTASH_REDIS_REST_TOKEN=...
+JWT_SECRET=...                        # Generate with: go run cmd/keygen/main.go
+AT_USERNAME=sandbox
+AT_API_KEY=...                        # Africa's Talking API key
+R2_ACCOUNT_ID=...
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+R2_BUCKET_NAME=trucking-logistics-app
+```
 
-4. **Verify connections**
-   ```bash
-   go run cmd/check/main.go
-   # Should show: ✓ PostgreSQL connected, ✓ PostGIS version, ✓ Redis connected
-   ```
+**3. Verify all connections**
+```bash
+go run cmd/check/main.go
+# Expected:
+# ✓ PostgreSQL connected (PostGIS 3.6)
+# ✓ Upstash Redis connected
+# ✓ JWT configuration valid
+# ✓ R2 bucket accessible
+```
 
-5. **Start the server**
-   ```bash
-   go run cmd/server/main.go
-   # Server starts on http://localhost:8080
-   ```
+**4. Start the server**
+```bash
+go run cmd/server/main.go
+# Server starts on http://localhost:8080
+# Migrations run automatically on startup
+```
 
-6. **Test the API**
-   ```bash
-   curl http://localhost:8080/health
-   # Should return: {"success":true,"data":{"status":"healthy","env":"development"}}
-   ```
+**5. Test the API**
+```bash
+curl http://localhost:8080/health
+# {"success":true,"data":{"status":"healthy","env":"development"}}
+
+curl -X POST http://localhost:8080/api/v1/auth/send-otp \
+  -H "Content-Type: application/json" \
+  -d '{"phone":"+233501234567","role":"driver","language":"en"}'
+```
 
 ### Quick Commands (Makefile)
 ```bash
-make help          # Show all available commands
-make dev           # Run development server
-make check         # Run health checks
-make test          # Run tests
-make build         # Build binaries
-make docker-up     # Start Docker services
-make docker-down   # Stop Docker services
+make help       # Show all commands
+make dev        # Run development server
+make check      # Run health checks
+make build      # Build all binaries
+make docker-up  # Start local Docker services
 ```
 
 ---
 
-## Project Structure
+## 3. Project Structure
 
-### Directory Layout
 ```
 logistic-app-go/
-├── cmd/                        # Application entry points
-│   ├── server/main.go          # HTTP server
-│   ├── worker/main.go          # Background job processor (Phase 4+)
-│   └── check/main.go           # Health check CLI
+├── cmd/                            # Application entry points
+│   ├── server/main.go              # HTTP server (wires all dependencies)
+│   ├── check/main.go               # Health check CLI tool
+│   ├── keygen/main.go              # Secure JWT key generator
+│   ├── test_user/main.go           # User model integration test
+│   ├── test_otp/main.go            # OTP service integration test
+│   ├── test_sms/main.go            # SMS service integration test
+│   ├── test_jwt_middleware/main.go # JWT middleware integration test
+│   └── test_auth/main.go           # Full auth flow end-to-end test
 │
-├── internal/                   # Private application code (Phase 1+)
-│   ├── auth/                   # Authentication (OTP, JWT, middleware)
-│   ├── user/                   # User management
-│   ├── fleet/                  # Fleet companies & trucks
-│   ├── driver/                 # Driver onboarding & KYC
-│   ├── load/                   # Load posting & pricing
-│   ├── trip/                   # Trip lifecycle & tracking
-│   ├── payment/                # Escrow & payouts
-│   ├── location/               # GPS tracking & WebSocket
-│   ├── matching/               # Truck matching algorithm
-│   ├── admin/                  # Admin dashboard backend
-│   ├── sms/                    # SMS service wrapper
-│   └── storage/                # File storage (R2/S3)
+├── internal/                       # Private business logic (not importable externally)
+│   ├── auth/
+│   │   ├── otp_service.go          # OTP generate/store/verify/rate-limit
+│   │   ├── middleware.go           # JWTMiddleware, RequireRoles, GetClaims
+│   │   └── handler.go              # HTTP handlers: send-otp, verify-otp, me
+│   ├── sms/
+│   │   └── service.go              # Africa's Talking SMS wrapper
+│   └── user/
+│       ├── model.go                # User GORM struct, role/KYC constants
+│       ├── repository.go           # Database CRUD (interface + GORM impl)
+│       └── service.go              # FindOrCreate, GetByID, UpdateProfile
 │
-├── pkg/                        # Public, reusable packages
-│   ├── config/                 # Configuration management
-│   ├── database/               # Database connection
-│   ├── cache/                  # Redis client
-│   ├── queue/                  # Job queue (Phase 4+)
-│   └── response/               # HTTP response helpers
+├── pkg/                            # Shared, reusable packages
+│   ├── auth/jwt.go                 # JWT manager (generate, verify, refresh)
+│   ├── cache/upstash.go            # Upstash Redis REST client
+│   ├── config/config.go            # Config struct + env loader + validation
+│   ├── database/
+│   │   ├── postgres.go             # PostgreSQL + PostGIS connection
+│   │   └── migrate.go              # GORM auto-migration runner
+│   ├── response/response.go        # JSON response helpers
+│   └── storage/r2.go               # Cloudflare R2 S3-compatible client
 │
-├── docs/                       # Documentation
-│   ├── DEVELOPER-GUIDE.md      # This file
-│   ├── API.md                  # API documentation (Phase 1+)
-│   ├── ARCHITECTURE.md         # System design (Phase 1+)
-│   └── DEPLOYMENT.md           # Deployment guide (Phase 10+)
+├── migrations/
+│   └── 001_create_users.sql        # Raw SQL migration (reference/backup)
 │
-├── migrations/                 # Database migrations (Phase 1+)
-│   ├── 001_initial_schema.sql
-│   └── ...
-│
-├── .env.example                # Environment template
-├── docker-compose.yml          # Local development services
-├── Makefile                    # Common commands
-└── README.md                   # Project overview
+├── docs/                           # All documentation lives here
+├── .env                            # Your secrets (NEVER COMMIT)
+├── .env.example                    # Template — safe to commit
+├── docker-compose.yml              # Local PostgreSQL + Redis
+├── Makefile                        # Common dev commands
+└── go.mod / go.sum                 # Dependency management
 ```
 
-### Package Organization Principles
+### Package Organisation Rules
 
-**1. `cmd/` - Application Entry Points**
-- Each subdirectory is a separate executable
-- Minimal logic — delegates to `internal/` and `pkg/`
-- Example: `cmd/server/main.go` wires up dependencies and starts HTTP server
-
-**2. `internal/` - Private Business Logic**
-- NOT importable by external projects
-- Domain-driven structure (auth, fleet, trip, etc.)
-- Each domain has: `handler.go`, `service.go`, `repository.go`, `dto.go`
-
-**3. `pkg/` - Public Utilities**
-- Reusable, domain-agnostic packages
-- Could be extracted into separate libraries
-- No dependencies on `internal/`
+| Package | What Lives Here | Rule |
+|---------|----------------|------|
+| `cmd/` | `main.go` files, test runners | Wire dependencies, no business logic |
+| `internal/` | Domain logic (auth, user, fleet…) | Only this project can import it |
+| `pkg/` | Reusable utilities (config, db, cache) | No dependency on `internal/` |
+| `migrations/` | Raw `.sql` files | One file per schema change, numbered sequentially |
 
 ---
 
-## Architecture & Design Principles
+## 4. Architecture & Design Principles
 
 ### Layered Architecture
-
 ```
 HTTP Request
     ↓
-Handler (controllers)          # Validate input, call service
+Handler             # Parse + validate input, call service, format response
     ↓
-Service (business logic)       # Orchestrate operations, enforce rules
+Service             # Business rules, orchestration, error handling
     ↓
-Repository (data access)       # CRUD operations, queries
+Repository          # Database queries, data mapping
     ↓
-Database / External API
+PostgreSQL / Redis / R2 / AT
 ```
 
-### Key Design Patterns
+### Interface-Based Design (Core Principle)
 
-**1. Dependency Injection**
+Every service dependency is an **interface**, not a concrete type. This makes services:
+- Testable (swap real with mock in tests)
+- Decoupled (swap Africa's Talking with Twilio without touching business logic)
+- Clear (interface is the contract, implementation is the detail)
+
 ```go
-// Services receive dependencies via constructor
-func NewAuthService(
-    otpService OTPService,
-    jwtService JWTService,
-    smsService SMSService,
-    userRepo UserRepository,
-) AuthService {
-    return &authService{
-        otpService: otpService,
-        jwtService: jwtService,
-        smsService: smsService,
-        userRepo:   userRepo,
+// GOOD — depend on the interface
+type SMSService interface {
+    SendOTP(phone, code string) error
+    SendWelcome(phone, name, lang string) error
+}
+
+// BAD — depend on the concrete type
+type AuthHandler struct {
+    sms *sms.Service  // tightly coupled to AT implementation
+}
+```
+
+### Dependency Injection Pattern
+
+All dependencies are wired in `cmd/server/main.go`. No global variables.
+
+```go
+// cmd/server/main.go
+db        := database.NewPostgresDB(cfg.Database.URL, isDev)
+redis     := cache.NewUpstashClient(cfg.Redis.URL, cfg.Redis.Token)
+jwtMgr    := auth.NewJWTManager(cfg.JWT.Secret, cfg.JWT.ExpiresIn)
+smsSvc    := sms.NewService(cfg.SMS.Username, cfg.SMS.APIKey, cfg.SMS.SenderID)
+userRepo  := user.NewRepository(db)
+userSvc   := user.NewService(userRepo)
+otpSvc    := internalAuth.NewOTPService(redis)
+authHdlr  := internalAuth.NewHandler(otpSvc, smsSvc, userSvc, jwtMgr)
+```
+
+### Repository Pattern
+
+Repositories isolate database access. The service layer never touches GORM directly.
+
+```go
+// Interface (in model.go or repository.go)
+type Repository interface {
+    FindByPhone(phone string) (*User, error)
+    FindByID(id uuid.UUID) (*User, error)
+    Create(u *User) error
+    Update(u *User) error
+}
+
+// GORM implementation
+type gormRepository struct { db *gorm.DB }
+
+func (r *gormRepository) FindByPhone(phone string) (*User, error) {
+    var u User
+    err := r.db.Where("phone = ?", phone).First(&u).Error
+    if errors.Is(err, gorm.ErrRecordNotFound) {
+        return nil, nil  // not found is not an error at this layer
+    }
+    return &u, err
+}
+```
+
+---
+
+## 5. Authentication System
+
+### Overview
+
+Authentication is phone-based using OTP (One-Time Password). No passwords.
+
+```
+Phone → OTP SMS → Verify → JWT Token
+```
+
+### User Roles
+
+| Role | Description | Can Accept Loads? |
+|------|-------------|------------------|
+| `shipper` | Posts loads for transport | No |
+| `driver` | Drives for a fleet company | Yes (if KYC approved) |
+| `fleet_admin` | Manages fleet company | No |
+| `owner_operator` | Independent truck owner-driver | Yes (if KYC approved) |
+| `admin` | Platform administrator | No |
+
+### KYC Status
+
+| Status | Meaning |
+|--------|---------|
+| `pending` | Default on registration, awaiting documents |
+| `approved` | Identity verified — driver can accept loads |
+| `rejected` | Documents rejected — must re-submit |
+
+### OTP Flow
+
+```
+Client                  Backend                 Redis / AT
+  |                        |                        |
+  |-- POST /send-otp ----→ |                        |
+  |   {phone, role}        |-- GenerateCode ------→ |
+  |                        |-- SET otp:{phone} ---→ | TTL: 10 min
+  |                        |-- INCR rate:{phone} → | TTL: 10 min (max 3)
+  |                        |-- SendSMS ----------→ Africa's Talking
+  |← {message: "sent"} --- |                        |
+  |                        |                        |
+  |-- POST /verify-otp --→ |                        |
+  |   {phone, code}        |-- GET otp:{phone} ---→ |
+  |                        |-- Compare codes        |
+  |                        |-- DEL otp:{phone} ---→ | (single-use)
+  |                        |-- FindOrCreate user    |
+  |                        |-- Issue JWT            |
+  |← {token, is_new, user} |                        |
+```
+
+### JWT Claims Structure
+
+```go
+type Claims struct {
+    UserID uuid.UUID `json:"sub"`    // User's database UUID
+    Phone  string    `json:"phone"`  // E.164 phone number
+    Role   string    `json:"role"`   // One of the role constants
+    jwt.RegisteredClaims             // exp, iat, nbf
+}
+```
+
+### Protecting Routes
+
+```go
+// In setupRouter (cmd/server/main.go):
+
+// Public (no JWT)
+v1.POST("/auth/send-otp", authHandler.SendOTP)
+v1.POST("/auth/verify-otp", authHandler.VerifyOTP)
+
+// JWT required
+protected := v1.Group("/", internalAuth.JWTMiddleware(jwtManager))
+protected.GET("/auth/me", authHandler.Me)
+
+// Role-restricted
+adminOnly := protected.Group("/", internalAuth.RequireRoles(user.RoleAdmin))
+adminOnly.GET("/admin/users", adminHandler.ListUsers)
+
+// Multiple roles
+driverRoutes := protected.Group("/", internalAuth.RequireRoles(
+    user.RoleDriver, user.RoleOwnerOperator,
+))
+driverRoutes.POST("/trips/:id/accept", tripHandler.Accept)
+```
+
+### Reading the Authenticated User in a Handler
+
+```go
+func (h *MyHandler) SomeProtectedRoute(c *gin.Context) {
+    claims := internalAuth.GetClaims(c)
+    // claims.UserID  — uuid.UUID
+    // claims.Phone   — string
+    // claims.Role    — string
+
+    user, err := h.userSvc.GetByID(claims.UserID)
+    // ...
+}
+```
+
+### Generating a JWT Secret
+
+```bash
+go run cmd/keygen/main.go
+# Output: a 44-character base64-encoded 256-bit key
+# Paste it into .env as JWT_SECRET
+```
+
+---
+
+## 6. Development Workflow
+
+### Branch Strategy
+
+```
+main      ← Production-ready, tagged releases
+  └── dev ← Integration branch, all features merge here
+       ├── feature/fleet-management
+       ├── feature/load-posting
+       └── feature/matching-engine
+```
+
+### Adding a New Domain (Example: Phase 2 Fleet)
+
+**1. Create the model** (`internal/fleet/model.go`)
+```go
+type FleetCompany struct {
+    ID           uuid.UUID `gorm:"type:uuid;primaryKey"`
+    BusinessName string    `gorm:"not null"`
+    // ...
+}
+
+func (f *FleetCompany) BeforeCreate(tx *gorm.DB) error {
+    if f.ID == uuid.Nil { f.ID = uuid.New() }
+    return nil
+}
+```
+
+**2. Create the repository** (`internal/fleet/repository.go`)
+```go
+type Repository interface {
+    FindByID(id uuid.UUID) (*FleetCompany, error)
+    Create(f *FleetCompany) error
+}
+
+type gormRepository struct{ db *gorm.DB }
+func NewRepository(db *gorm.DB) Repository { return &gormRepository{db} }
+```
+
+**3. Create the service** (`internal/fleet/service.go`)
+```go
+type Service interface {
+    Register(ownerID uuid.UUID, name string) (*FleetCompany, error)
+}
+
+type service struct{ repo Repository }
+func NewService(repo Repository) Service { return &service{repo} }
+```
+
+**4. Create handlers** (`internal/fleet/handler.go`)
+```go
+type Handler struct{ svc Service }
+func NewHandler(svc Service) *Handler { return &Handler{svc} }
+
+func (h *Handler) Register(c *gin.Context) { /* ... */ }
+func (h *Handler) RegisterRoutes(protected *gin.RouterGroup) {
+    protected.POST("/fleet/register", h.Register)
+}
+```
+
+**5. Add migration** (`pkg/database/migrate.go`)
+```go
+func Migrate(db *gorm.DB) error {
+    return db.AutoMigrate(
+        &user.User{},
+        &fleet.FleetCompany{},  // add here
+    )
+}
+```
+
+**6. Wire in server** (`cmd/server/main.go`)
+```go
+fleetRepo := fleet.NewRepository(db)
+fleetSvc  := fleet.NewService(fleetRepo)
+fleetHdlr := fleet.NewHandler(fleetSvc)
+fleetHdlr.RegisterRoutes(protected)
+```
+
+### Commit Message Convention
+
+```
+feat(auth):     Add JWT refresh endpoint
+fix(otp):       Correct rate limit counter TTL
+docs(api):      Add /me endpoint documentation
+refactor(user): Extract phone validation helper
+test(fleet):    Add fleet registration integration test
+chore(deps):    Upgrade gin to v1.12.1
+```
+
+### Code Style
+
+**Error handling** — always wrap with context:
+```go
+if err != nil {
+    return fmt.Errorf("FindOrCreate lookup: %w", err)
+}
+```
+
+**Godoc comments** — all exported identifiers:
+```go
+// FindOrCreate looks up a user by phone or creates a new one on first login.
+// Returns (user, isNew, error). isNew=true on first-ever login.
+func (s *service) FindOrCreate(phone, role, language string) (*User, bool, error) {
+```
+
+**Response helpers** — never write raw `c.JSON` in handlers:
+```go
+response.Success(c, data)          // 200
+response.Created(c, data)          // 201
+response.BadRequest(c, "message")  // 400
+response.Unauthorized(c, "msg")    // 401
+response.Forbidden(c, "message")   // 403
+response.NotFound(c, "message")    // 404
+response.InternalError(c, "msg")   // 500
+```
+
+---
+
+## 7. Database & Migrations
+
+### Auto-Migration
+
+Migrations run automatically every time the server starts:
+
+```go
+// pkg/database/migrate.go
+func Migrate(db *gorm.DB) error {
+    return db.AutoMigrate(
+        &user.User{},
+        // Add new models here as phases progress
+    )
+}
+```
+
+GORM auto-migration:
+- Creates tables that don't exist
+- Adds missing columns
+- Creates missing indexes
+- **Never drops columns or tables** (safe to run on every start)
+
+### Adding a Migration
+
+1. Add the GORM model struct in `internal/<domain>/model.go`
+2. Register it in `pkg/database/migrate.go`
+3. Optionally add a raw `.sql` file in `migrations/` for reference
+
+### PostGIS Usage
+
+```go
+// Store as geography point (WGS84)
+type Truck struct {
+    CurrentLocation string `gorm:"type:geography(Point,4326)"`
+}
+
+// Raw spatial query — find trucks within 50km
+db.Raw(`
+    SELECT id, registration,
+           ST_Distance(current_location::geography,
+                       ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography) AS distance_m
+    FROM trucks
+    WHERE ST_DWithin(
+        current_location::geography,
+        ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography,
+        50000
+    )
+    ORDER BY distance_m
+`, lng, lat, lng, lat).Scan(&results)
+```
+
+### Soft Delete
+
+All models use GORM soft delete via `gorm.DeletedAt`:
+
+```go
+// Soft delete (sets deleted_at timestamp)
+db.Delete(&user)
+
+// Query — GORM automatically filters WHERE deleted_at IS NULL
+db.Find(&users)
+
+// Include soft-deleted records
+db.Unscoped().Find(&users)
+```
+
+---
+
+## 8. Testing Strategy
+
+### Integration Test Pattern
+
+All tests in `cmd/test_*/main.go` follow this pattern:
+1. Connect to live infrastructure (Neon, Upstash, AT)
+2. Clean up any leftover state from previous runs
+3. Run test scenarios
+4. Clean up test data
+5. Print summary
+
+```bash
+# Run all integration tests
+go run cmd/test_user/main.go
+go run cmd/test_otp/main.go
+go run cmd/test_sms/main.go
+go run cmd/test_jwt_middleware/main.go
+go run cmd/test_auth/main.go
+```
+
+### In-Process HTTP Testing (No Network)
+
+JWT middleware and handler tests use `httptest` — no server needed:
+
+```go
+// Spin up a real Gin router in memory
+router := buildTestRouter(jwtManager)
+
+// Fire a request
+req := httptest.NewRequest("POST", "/auth/send-otp", body)
+w   := httptest.NewRecorder()
+router.ServeHTTP(w, req)
+
+assert.Equal(t, 200, w.Code)
+```
+
+### Unit Test Pattern (for future use)
+
+```go
+// Mock the repository
+type mockUserRepo struct {
+    findByPhone func(phone string) (*user.User, error)
+}
+func (m *mockUserRepo) FindByPhone(p string) (*user.User, error) { return m.findByPhone(p) }
+
+// Test the service in isolation
+svc := user.NewService(&mockUserRepo{
+    findByPhone: func(p string) (*user.User, error) { return nil, nil },
+})
+u, isNew, err := svc.FindOrCreate("+233501234567", user.RoleDriver, "en")
+assert.True(t, isNew)
+```
+
+---
+
+## 9. API Reference
+
+### Authentication
+
+#### POST /api/v1/auth/send-otp
+Request OTP code via SMS.
+
+```json
+// Request
+{
+    "phone": "+233501234567",   // required, E.164 format
+    "role": "driver",           // required: shipper|driver|fleet_admin|owner_operator
+    "language": "en"            // optional: "en" (default) or "fr"
+}
+
+// Response 200
+{
+    "success": true,
+    "data": { "message": "OTP sent successfully", "phone": "+233501234567" }
+}
+
+// Response 429 (rate limited)
+{
+    "success": false,
+    "error": "too many OTP requests — maximum 3 per 10m0s, please try again later"
+}
+```
+
+#### POST /api/v1/auth/verify-otp
+Verify OTP and receive JWT. Pass `role` and `language` as query params.
+
+```
+POST /api/v1/auth/verify-otp?role=driver&language=en
+```
+
+```json
+// Request
+{
+    "phone": "+233501234567",
+    "code": "123456"
+}
+
+// Response 201 (new user created)
+{
+    "success": true,
+    "token": "eyJhbGci...",
+    "is_new": true,
+    "user": {
+        "id": "uuid",
+        "phone": "+233501234567",
+        "role": "driver",
+        "language": "en",
+        "kyc_status": "pending"
+    }
+}
+
+// Response 200 (existing user)
+// Same shape, is_new: false
+
+// Response 401 (wrong/expired code)
+{ "success": false, "error": "invalid OTP code" }
+```
+
+#### GET /api/v1/auth/me
+Get authenticated user's profile. Requires `Authorization: Bearer <token>`.
+
+```json
+// Response 200
+{
+    "success": true,
+    "data": {
+        "id": "uuid",
+        "phone": "+233501234567",
+        "role": "driver",
+        "name": "Kwame Mensah",
+        "language": "en",
+        "kyc_status": "pending",
+        "is_active": true,
+        "created_at": "2026-08-13T...",
+        "updated_at": "2026-08-13T..."
     }
 }
 ```
 
-**2. Interface-Based Design (Modularity)**
-```go
-// Define interfaces, not concrete types
-type SMSService interface {
-    SendOTP(phone, code string) error
-}
-
-// Easy to swap implementations (Africa's Talking → Twilio)
-type africastalkingSMS struct { /* ... */ }
-type twilioSMS struct { /* ... */ }
-```
-
-**3. Repository Pattern**
-```go
-// Abstract database access
-type UserRepository interface {
-    FindByID(id uuid.UUID) (*User, error)
-    FindByPhone(phone string) (*User, error)
-    Create(user *User) error
-    Update(user *User) error
-}
-
-// Implementation uses GORM, but could swap to sqlx or raw SQL
-```
-
-**4. Context Propagation**
-```go
-// Always pass context for cancellation and deadlines
-func (s *authService) VerifyOTP(ctx context.Context, phone, code string) error {
-    // Check Redis with context timeout
-    storedCode, err := s.cache.Get(ctx, fmt.Sprintf("otp:%s", phone))
-    // ...
-}
-```
-
-### Modularity Guidelines
-
-**✅ DO:**
-- Define interfaces for all external dependencies (SMS, payment, storage)
-- Use constructor injection (not global variables)
-- Keep packages focused (single responsibility)
-- Write tests using mock implementations
-
-**❌ DON'T:**
-- Import `internal/` packages from other domains (use interfaces)
-- Use global state (except config and logger)
-- Hardcode external URLs or credentials
-- Tight-couple to third-party libraries
-
----
-
-## Development Workflow
-
-### Adding a New Feature (Example: Driver Rating)
-
-1. **Define the interface** (`internal/rating/service.go`)
-   ```go
-   type RatingService interface {
-       CreateRating(ctx context.Context, req CreateRatingRequest) error
-       GetDriverRating(ctx context.Context, driverID uuid.UUID) (float64, error)
-   }
-   ```
-
-2. **Create the repository** (`internal/rating/repository.go`)
-   ```go
-   type RatingRepository interface {
-       Create(ctx context.Context, rating *Rating) error
-       FindByDriverID(ctx context.Context, driverID uuid.UUID) ([]Rating, error)
-   }
-   ```
-
-3. **Implement the service** (`internal/rating/service.go`)
-   ```go
-   type ratingService struct {
-       repo RatingRepository
-   }
-   
-   func (s *ratingService) CreateRating(ctx context.Context, req CreateRatingRequest) error {
-       // Business logic here
-   }
-   ```
-
-4. **Add HTTP handlers** (`internal/rating/handler.go`)
-   ```go
-   func (h *RatingHandler) CreateRating(c *gin.Context) {
-       // Parse request, call service, return response
-   }
-   ```
-
-5. **Wire up in main** (`cmd/server/main.go`)
-   ```go
-   ratingRepo := rating.NewRepository(db)
-   ratingService := rating.NewService(ratingRepo)
-   ratingHandler := rating.NewHandler(ratingService)
-   
-   v1.POST("/ratings", ratingHandler.CreateRating)
-   ```
-
-6. **Write tests** (`internal/rating/service_test.go`)
-   ```go
-   func TestCreateRating(t *testing.T) {
-       mockRepo := &MockRatingRepository{}
-       service := NewService(mockRepo)
-       // Test logic
-   }
-   ```
-
-### Code Style Guidelines
-
-**Naming Conventions:**
-- Packages: lowercase, single word (`auth`, not `authService`)
-- Interfaces: noun or verb phrase (`UserRepository`, `SMSService`)
-- Structs: PascalCase (`FleetCompany`, `TripStop`)
-- Functions: PascalCase for exported, camelCase for private
-- Constants: PascalCase or UPPER_SNAKE for environment vars
-
-**Comments:**
-```go
-// Every exported function/type needs a doc comment
-
-// NewAuthService creates a new authentication service with the provided dependencies.
-// It returns an AuthService implementation that handles OTP verification and JWT issuance.
-func NewAuthService(/* ... */) AuthService {
-    // ...
-}
-```
-
-**Error Handling:**
-```go
-// Always wrap errors with context
-if err != nil {
-    return fmt.Errorf("failed to create user: %w", err)
-}
-
-// Log errors before returning 500s
-if err := service.DoSomething(ctx); err != nil {
-    log.Printf("ERROR: DoSomething failed: %v", err)
-    response.InternalError(c, "Operation failed")
-    return
-}
+#### GET /health
+```json
+{ "success": true, "data": { "status": "healthy", "env": "development" } }
 ```
 
 ---
 
-## Database & Migrations
+## 10. Deployment
 
-### Schema Management (Phase 1+)
+*Full deployment guide will be added at Phase 10. Summary below.*
 
-We use `golang-migrate/migrate` for database migrations.
+### Environments
 
-**Create a migration:**
+| Environment | Database | Redis | Mode |
+|-------------|----------|-------|------|
+| Development | Neon (dev branch) | Upstash | `GO_ENV=development` |
+| Staging | Neon (staging branch) | Upstash | `GO_ENV=staging` |
+| Production | Neon (main branch) | Upstash | `GO_ENV=production` |
+
+### Build
+
 ```bash
-migrate create -ext sql -dir migrations -seq add_users_table
-# Creates:
-# migrations/000001_add_users_table.up.sql
-# migrations/000001_add_users_table.down.sql
+# Build server binary
+go build -o bin/server cmd/server/main.go
+
+# Cross-compile for Linux (common deployment target)
+GOOS=linux GOARCH=amd64 go build -o bin/server-linux cmd/server/main.go
 ```
 
-**Run migrations:**
+### Environment Variables Required in Production
+
+All variables from `.env.example` — set as environment variables on your hosting platform, never as files.
+
+---
+
+## 11. Troubleshooting
+
+### "Failed to connect to database"
 ```bash
-migrate -path migrations -database "postgresql://user:pass@localhost:5432/db?sslmode=disable" up
+go run cmd/check/main.go  # diagnose which service is failing
+# Verify DATABASE_URL in .env
+# Check Neon dashboard for connection limits
 ```
 
-### PostGIS Usage
+### "OTP expired or not found"
+- OTPs expire after 10 minutes
+- Check Upstash dashboard to see if key exists: `otp:+233...`
+- Rate limit: max 3 per phone per 10 minutes — wait for TTL to expire
 
-**Store locations as geography points:**
-```sql
-CREATE TABLE trucks (
-    id UUID PRIMARY KEY,
-    current_location GEOGRAPHY(POINT, 4326),
-    -- ...
-);
-```
+### "Invalid or expired token"
+- JWT secret may have changed (all existing tokens invalidated)
+- Check token expiry (`JWT_EXPIRES_IN` — default 168h)
+- Decode token at jwt.io to inspect claims
 
-**Query nearest trucks:**
-```sql
-SELECT id, ST_Distance(current_location, ST_MakePoint(-0.1870, 5.6037)::geography) AS distance_meters
-FROM trucks
-WHERE status = 'available'
-ORDER BY distance_meters
-LIMIT 10;
-```
+### "SMS not received"
+- In sandbox: check AT simulator at https://simulator.africastalking.com
+- In production: verify `AT_API_KEY` is the production key, not sandbox
 
-**GORM representation:**
-```go
-type Truck struct {
-    ID              uuid.UUID
-    CurrentLocation string `gorm:"type:geography(Point,4326)"` // Stored as WKT or GeoJSON
-}
-```
-
----
-
-## Testing Strategy
-
-### Test Structure
-```
-internal/auth/
-├── handler.go
-├── handler_test.go       # HTTP handler tests (integration)
-├── service.go
-├── service_test.go       # Business logic tests (unit)
-├── repository.go
-└── repository_test.go    # Database tests (integration)
-```
-
-### Unit Tests (Business Logic)
-```go
-func TestVerifyOTP_Success(t *testing.T) {
-    // Arrange: mock dependencies
-    mockCache := &MockCache{}
-    mockCache.On("Get", mock.Anything, "otp:+233201234567").Return("123456", nil)
-    
-    service := NewOTPService(mockCache)
-    
-    // Act
-    err := service.VerifyOTP(context.Background(), "+233201234567", "123456")
-    
-    // Assert
-    assert.NoError(t, err)
-    mockCache.AssertExpectations(t)
-}
-```
-
-### Integration Tests (HTTP Endpoints)
-```go
-func TestCreateLoad_Integration(t *testing.T) {
-    // Set up test database
-    db := setupTestDB(t)
-    defer teardownTestDB(t, db)
-    
-    // Create test server
-    router := setupTestRouter(db)
-    w := httptest.NewRecorder()
-    
-    // Make request
-    req, _ := http.NewRequest("POST", "/api/v1/loads", bytes.NewBuffer(payload))
-    router.ServeHTTP(w, req)
-    
-    // Assert response
-    assert.Equal(t, 201, w.Code)
-}
-```
-
-### Running Tests
+### Build errors
 ```bash
-# All tests
-go test ./...
+go mod tidy       # sync dependencies
+go build ./...    # show all compile errors
+```
 
-# Specific package
-go test ./internal/auth/...
-
-# With coverage
-go test -cover ./...
-
-# Verbose
-go test -v ./...
+### PostGIS query failing
+```bash
+# Verify PostGIS is enabled
+go run cmd/check/main.go
+# Should show: ✓ PostGIS version: 3.6
 ```
 
 ---
 
-## Deployment
+## Related Documentation
 
-*(This section will be expanded in Phase 10)*
-
-### Environment-Specific Configuration
-
-**Development:**
-- Local PostgreSQL + Redis via Docker
-- Debug logging enabled
-- Hot reload (using `air` or similar)
-
-**Staging:**
-- Managed PostgreSQL (Neon)
-- Managed Redis (Upstash)
-- Test API keys for payments/SMS
-
-**Production:**
-- AWS RDS PostgreSQL + ElastiCache Redis
-- Production API keys
-- Error tracking (Sentry)
-- Monitoring (CloudWatch)
+- [Architecture Overview](ARCHITECTURE.md) — System design and decisions
+- [JWT Setup Guide](JWT-SETUP.md) — Authentication deep-dive
+- [Git Workflow](GIT-WORKFLOW.md) — Branching strategy
+- [Quick Reference](QUICK-REFERENCE.md) — Commands and patterns
+- [Project Context Log](PROJECT-CONTEXT-LOG.md) — Full history for AI handoff
 
 ---
 
-## Troubleshooting
-
-### Common Issues
-
-**1. "Failed to connect to database"**
-- Check Docker is running: `docker ps`
-- Verify DATABASE_URL in `.env`
-- Run health check: `go run cmd/check/main.go`
-
-**2. "Failed to ping Redis"**
-- Check Redis is running: `docker ps | grep redis`
-- Test manually: `redis-cli ping`
-
-**3. "PostGIS version query failed"**
-- PostGIS not installed: `docker exec -it logistic_postgres psql -U logistic_user -d logistic_app -c "CREATE EXTENSION postgis;"`
-
-**4. Build errors**
-- Run `go mod tidy` to sync dependencies
-- Clear cache: `go clean -modcache`
-
-### Getting Help
-
-- Check this guide first
-- Review phase completion docs (`PHASE-X-COMPLETE.md`)
-- Check implementation plan (`IMPLEMENTATION-PLAN.md`)
-- Search project issues (when using issue tracker)
-
----
-
-## Contributing Guidelines
-
-*(Will be expanded as team grows)*
-
-**Before submitting a PR:**
-1. Run tests: `make test`
-2. Run linter: `golangci-lint run`
-3. Update documentation if adding features
-4. Follow commit message format: `type(scope): description`
-
----
-
-**Last Updated:** 2026-08-11 (Phase 0)
-**Next Update:** Phase 1 completion (add auth documentation)
+**Last Updated**: 2026-08-13  
+**Current Phase**: Phase 1 (Authentication) Complete  
+**Next Phase**: Phase 2 — Core Domain Models (Fleet, Trucks, Drivers)

@@ -1,125 +1,95 @@
-# Secure Project Context Log
+# Project Context Log
 
 **Project**: Cross-Border Trucking Logistics Platform  
 **Language**: Go (Gin framework)  
-**Status**: Phase 0 Complete, Ready for Phase 1  
+**Status**: Phase 1 Complete, Ready for Phase 2  
 **Created**: August 11, 2026  
-**Last Updated**: August 11, 2026  
+**Last Updated**: August 13, 2026  
 **Security**: No credentials included in this document
 
 ---
 
 ## 🎯 Project Purpose
 
-Building a freight marketplace connecting Mali and Ghana for cross-border trucking logistics with real-time GPS tracking, load matching, escrow payments, and multilingual support.
+Building a freight marketplace connecting Mali and Ghana for cross-border trucking logistics with real-time GPS tracking, load matching, escrow payments, and multilingual support (English + French).
 
-**Key Requirements from User:**
-1. Comprehensive documentation for dev team handoff
-2. Modular services that can be easily decoupled
+**Key Requirements:**
+1. Comprehensive documentation for easy team handoff
+2. Modular services that can be easily decoupled (interface-based design)
 3. Serverless infrastructure (Neon PostgreSQL, Upstash Redis, Cloudflare R2)
 4. Authentication via phone number + OTP (Africa's Talking SMS)
-5. Geospatial queries for truck/load matching
+5. Geospatial queries for truck/load matching (PostGIS)
 
 ---
 
 ## 📋 Conversation History (Condensed)
 
-### Session 1: Phase 0 Foundation
-- User: Asked to migrate from NestJS to Go/Gin backend
-- Established Go project structure (`cmd/`, `pkg/`, `internal/` pattern)
-- Set up configuration management with environment variables
-- Fixed broken Gin imports in routes and controllers
-- Built successfully with `go build`
+### Phase 0 Sessions (August 11, 2026)
 
-### Session 2: Documentation Request
-- User: "Add comprehensive documentation for dev team so that anyone can take over"
-- Created 18,500+ words of documentation:
-  - DEVELOPER-GUIDE.md (5,800 words) - Complete onboarding
-  - ARCHITECTURE.md (4,500 words) - System design
-  - QUICK-REFERENCE.md (2,000 words) - Daily commands
-  - DOCUMENTATION-INDEX.md (2,500 words) - Central hub
-  - CONTRIBUTING.md (3,500 words) - Code standards
+**Session 1 — Foundation**: Migrated from NestJS to Go/Gin. Established `cmd/`, `pkg/`, `internal/` project structure. Fixed broken imports. First successful `go build`.
 
-### Session 3: Database Decision
-- User: "For the database I'm using Neon PostgreSQL + PostGIS"
-- Updated all documentation to reflect Neon PostgreSQL
-- PostGIS is pre-enabled on Neon (no manual setup)
-- Connection pooling optimized for serverless
-- Created NEON-SETUP.md (3,500 words) and NEON-BENEFITS.md (2,500 words)
-- Cost analysis shows 62% savings vs traditional PostgreSQL
+**Session 2 — Documentation**: Created 18,500+ words of team documentation (DEVELOPER-GUIDE, ARCHITECTURE, QUICK-REFERENCE, DOCUMENTATION-INDEX, CONTRIBUTING).
 
-### Session 4: Redis Decision
-- User: "For Redis, use Upstash Redis with REST API, use token instead of password"
-- Created custom HTTP client for Upstash REST API (`pkg/cache/upstash.go`)
-- Implements all cache operations: Get, Set, Del, Incr, Expire
-- Configuration uses `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`
-- Health check updated to test Upstash REST API
-- Created UPSTASH-SETUP.md (4,000 words)
+**Session 3 — Database**: Chose Neon PostgreSQL + PostGIS. PostGIS pre-enabled on Neon. Connection pooling optimised for serverless. NEON-SETUP.md + NEON-BENEFITS.md created.
 
-### Session 5: R2 Storage Testing
-- User: "Test the connection of the R2"
-- Created R2 client using AWS SDK v2 for S3-compatible API
-- Implemented operations: Upload, GetPresignedURL, Delete, List, TestConnection
-- R2 check added to health check CLI (optional, warns if not configured)
-- Created R2-SETUP.md (3,000+ words)
+**Session 4 — Redis**: Chose Upstash Redis with REST API. Custom HTTP client created (`pkg/cache/upstash.go`). UPSTASH-SETUP.md created.
 
-### Session 6: JWT Authentication
-- User: "Create the JWT keys and then test the connection"
-- Generated secure JWT secret using key generator
-- Created JWT utility package (`pkg/auth/jwt.go`) with:
-  - Token generation with user ID, email, role claims
-  - Token verification and claims validation
-  - Token refresh functionality
-- Added JWT testing to health check CLI
-- Created JWT-SETUP.md (4,000 words)
-- Created key generator tool (`cmd/keygen/main.go`)
+**Session 5 — R2 Storage**: Integrated Cloudflare R2 via AWS SDK v2. R2-SETUP.md created. R2 bucket `trucking-logistics-app` tested successfully.
 
-### Session 7: Code Cleanup
-- User: Noticed old MongoDB files (`config/database.go`, `main.go`)
-- Identified as remnants from original NestJS migration
-- Deleted unused MongoDB files
-- Verified build still works
-- Created CLEANUP-LOG.md documenting the cleanup
+**Session 6 — JWT Keys**: Generated cryptographically secure JWT secret (256-bit). Created `pkg/auth/jwt.go` and `cmd/keygen/main.go`. JWT-SETUP.md created.
 
-### Session 8: Git Branching Strategy
-- User: "I want to branch out of the main branch to a dev branch"
-- Pushed Phase 0 work to `main` branch
-- Created `dev` branch from `main`
-- Established branching strategy:
-  - `main` = Production-ready (Phase 0 complete)
-  - `dev` = Development (Phase 1+)
-  - `feature/*` = Individual features
-- Created GIT-WORKFLOW.md (6,000+ words)
-- Created BRANCHING-SETUP-COMPLETE.md
+**Session 7 — Code Cleanup**: Deleted legacy MongoDB files (`config/database.go`, root `main.go`) left over from NestJS migration. CLEANUP-LOG.md created.
 
-### Session 9: ORM Decision
-- User: "For this specific project, which ORM is best suited?"
-- Recommended sticking with GORM (already implemented)
-- Reasons:
-  - Already working perfectly
-  - Best PostGIS support (critical for geospatial queries)
-  - Fastest development speed
-  - Team can take over easily
-  - Performance is fine (can optimize later with raw SQL)
-- **Current ORM**: GORM with PostgreSQL driver
+**Session 8 — Git Branching**: Pushed Phase 0 to `main`. Created `dev` branch for ongoing development. GIT-WORKFLOW.md created.
 
-### Session 10: Phase 0 Verification
-- User: "Verify if Phase 0 is complete"
-- Created comprehensive verification report (PHASE-0-VERIFICATION.md)
-- All Phase 0 requirements completed ✅
-- 4 bonus features implemented ✅
-- 45,300+ words of documentation ✅
-- Production-ready infrastructure ✅
+**Session 9 — ORM Decision**: Confirmed keeping GORM. Best PostGIS support, fastest dev speed, team-friendly, performance adequate.
 
-### Session 11: Security Incident & Fix
-- **Incident**: Neon credentials were accidentally exposed in a documentation file
-- **Action**: Immediately reverted the commit containing exposed credentials
-- **Resolution**: 
-  - Used `git reset --hard HEAD~1` to undo commit
-  - Used `git push origin dev --force` to remove from remote
-  - Created this secure context log without any credentials
-  - Verified `.env` file is protected by `.gitignore`
-- **Lesson**: Never commit actual credentials, only use placeholders in documentation
+**Session 10 — Phase 0 Verification**: All connections verified (PostgreSQL, Redis, JWT, R2). PHASE-0-VERIFICATION.md created.
+
+**Session 11 — Security Incident**: Neon credentials accidentally committed to PROJECT-CONTEXT-LOG.md. Immediately reverted with `git reset --hard HEAD~1` + force push. Credentials rotated. Secure version created without any credentials.
+
+### Phase 1 Sessions (August 13, 2026)
+
+**Session 12 — User Model** (`internal/user/model.go`):
+- UUID primary key with `BeforeCreate` auto-assign hook
+- Phone (E.164, unique index), Role, Name, Language (en/fr), KYCStatus, IsActive
+- Soft delete via `gorm.DeletedAt`
+- Helper methods: `IsDriver()`, `CanAcceptLoads()`, `IsKYCApproved()`
+- DB migration: `migrations/001_create_users.sql`
+- Central migration runner: `pkg/database/migrate.go`
+- **Tested**: 8 tests — create, fetch by ID/phone, update, helpers, unique constraint, soft delete, multiple roles. All passed against live Neon DB.
+
+**Session 13 — OTP Service** (`internal/auth/otp_service.go`):
+- Cryptographically secure 6-digit code generation (crypto/rand)
+- Redis key scheme: `otp:{phone}` (10-min TTL), `otp:rate:{phone}` (rate counter)
+- Rate limiting: max 3 requests per phone per 10-minute window
+- Single-use: code deleted from Redis immediately on successful verification
+- **Tested**: 7 tests — generate, wrong code rejected, correct code accepted, single-use, rate limiting, TTL expiry, 100-sample zero-pad verification. All passed against live Upstash.
+
+**Session 14 — SMS Service** (`internal/sms/service.go`):
+- Wraps Africa's Talking Go SDK
+- Auto-detects sandbox vs production from `AT_USERNAME`
+- Methods: `SendOTP`, `SendWelcome` (bilingual en/fr), `SendTripAssignment`
+- **Tested**: 7 tests — init, empty credentials rejected, OTP send, English welcome, French welcome, trip assignment, empty phone rejected. All passed against AT sandbox.
+
+**Session 15 — JWT Middleware** (`internal/auth/middleware.go`):
+- Updated JWT claims: `uuid.UUID` + `phone` (was `uint` + `email`)
+- `JWTMiddleware(jwtManager)` — validates Bearer token, attaches claims to Gin context
+- `RequireRoles(...roles)` — composable RBAC guard
+- `GetClaims(c)` — helper to read claims in any handler
+- **Tested**: 10 tests — no header, wrong format, tampered token, valid token + claims, RBAC allow/deny for driver/admin/owner_operator/shipper, public route. All passed.
+
+**Session 16 — User Repository & Service** (`internal/user/repository.go`, `internal/user/service.go`):
+- Repository interface: `FindByPhone`, `FindByID`, `Create`, `Update`
+- Service interface: `FindOrCreate`, `GetByID`, `UpdateProfile`
+- `FindOrCreate` returns `(user, isNew, error)` — new users created on first OTP verification
+
+**Session 17 — Auth Handlers** (`internal/auth/handler.go`):
+- `POST /api/v1/auth/send-otp` — validates phone (E.164), rate-limited, sends SMS
+- `POST /api/v1/auth/verify-otp` — verifies OTP, creates/fetches user, returns JWT (201 new / 200 existing)
+- `GET /api/v1/auth/me` — returns authenticated user profile (JWT required)
+- Server (`cmd/server/main.go`) fully wired with all Phase 1 services
+- **Tested**: 8 end-to-end tests — missing body, invalid phone, OTP send, wrong code, correct code → JWT, /me without token, /me with token, second login is_new=false. All passed.
 
 ---
 
@@ -127,308 +97,245 @@ Building a freight marketplace connecting Mali and Ghana for cross-border trucki
 
 ```
 logistic-app-go/
-├── cmd/                    # Entry points
-│   ├── server/main.go     # HTTP server (Gin)
-│   ├── check/main.go      # Health check CLI
-│   └── keygen/main.go     # JWT key generator
-├── pkg/                   # Shared packages
-│   ├── auth/jwt.go        # JWT manager ✅
-│   ├── cache/upstash.go   # Upstash Redis REST client ✅
-│   ├── config/config.go   # Configuration loader ✅
-│   ├── database/postgres.go # PostgreSQL + PostGIS ✅
-│   ├── response/response.go # HTTP response helpers ✅
-│   └── storage/r2.go      # Cloudflare R2 client ✅
-├── docs/                  # Documentation (45,300+ words)
-│   ├── DEVELOPER-GUIDE.md     # Main onboarding
-│   ├── ARCHITECTURE.md        # System design
-│   ├── GIT-WORKFLOW.md        # Branching strategy
-│   ├── JWT-SETUP.md           # Authentication guide
-│   ├── NEON-SETUP.md          # PostgreSQL setup
-│   ├── UPSTASH-SETUP.md       # Redis setup
-│   ├── R2-SETUP.md            # Cloud storage setup
-│   └── ... 7 more docs
-├── .env                    # Environment variables (NOT COMMITTED)
-├── .env.example           # Template with placeholders
-├── docker-compose.yml     # Local dev (PostgreSQL + Redis)
-├── Makefile               # Common commands
-└── go.mod                 # Dependencies
+├── cmd/
+│   ├── server/main.go          # HTTP server — fully wired (Phase 1)
+│   ├── check/main.go           # Health check CLI
+│   ├── keygen/main.go          # JWT key generator
+│   ├── test_user/main.go       # User model integration test
+│   ├── test_otp/main.go        # OTP service integration test
+│   ├── test_sms/main.go        # SMS service integration test
+│   ├── test_jwt_middleware/    # JWT middleware test
+│   └── test_auth/main.go       # Auth handlers end-to-end test
+│
+├── internal/
+│   ├── auth/
+│   │   ├── otp_service.go      # OTP generate/verify/rate-limit ✅
+│   │   ├── middleware.go       # JWTMiddleware + RequireRoles ✅
+│   │   └── handler.go          # send-otp, verify-otp, me ✅
+│   ├── sms/
+│   │   └── service.go          # Africa's Talking wrapper ✅
+│   └── user/
+│       ├── model.go            # User GORM struct + constants ✅
+│       ├── repository.go       # GORM CRUD (interface) ✅
+│       └── service.go          # FindOrCreate, GetByID, UpdateProfile ✅
+│
+├── pkg/
+│   ├── auth/jwt.go             # JWT manager (UUID+phone claims) ✅
+│   ├── cache/upstash.go        # Upstash Redis REST client ✅
+│   ├── config/config.go        # Config loader with validation ✅
+│   ├── database/
+│   │   ├── postgres.go         # PostgreSQL + PostGIS connection ✅
+│   │   └── migrate.go          # Auto-migration runner ✅
+│   ├── response/response.go    # HTTP response helpers ✅
+│   └── storage/r2.go           # Cloudflare R2 client ✅
+│
+├── migrations/
+│   └── 001_create_users.sql    # Users table SQL ✅
+│
+├── docs/                       # Documentation
+├── .env                        # Secrets (NOT committed)
+├── .env.example                # Template with placeholders
+├── docker-compose.yml          # Local dev
+├── Makefile                    # Common commands
+└── go.mod                      # Dependencies
 ```
 
 ---
 
 ## 🔧 Technology Stack
 
-### Infrastructure (All Serverless)
-- **Database**: Neon PostgreSQL + PostGIS (auto-enabled)
-- **Cache**: Upstash Redis (REST API)
-- **Storage**: Cloudflare R2 (S3-compatible)
-- **Authentication**: JWT (HS256)
+| Layer | Technology | Details |
+|-------|-----------|---------|
+| **Language** | Go 1.23 | — |
+| **Framework** | Gin | HTTP routing, middleware |
+| **ORM** | GORM | PostgreSQL driver, auto-migrate |
+| **Database** | Neon PostgreSQL + PostGIS | Serverless, geospatial |
+| **Cache** | Upstash Redis (REST API) | OTP storage, rate limiting |
+| **Storage** | Cloudflare R2 (S3-compatible) | Documents, images |
+| **Auth** | JWT HS256 + OTP | Phone-based, stateless |
+| **SMS** | Africa's Talking | OTP delivery, notifications |
+| **Branching** | main / dev / feature/* | Git strategy |
 
-### Backend
-- **Language**: Go 1.23
-- **Framework**: Gin
-- **ORM**: GORM with PostgreSQL driver
-- **Connection Pooling**: Configured for serverless
-- **API**: REST with JWT authentication
-
-### Development
-- **Health Checks**: Comprehensive CLI tool
-- **Documentation**: 45,300+ words across 12 documents
-- **Git Strategy**: main/dev/feature branches
-- **Build Tool**: Go modules
+### Dependencies (go.mod highlights)
+```
+github.com/gin-gonic/gin v1.12.0
+gorm.io/gorm v1.31.2
+gorm.io/driver/postgres v1.6.2
+github.com/golang-jwt/jwt/v5 v5.3.1
+github.com/google/uuid v1.6.0
+github.com/AfricasTalkingLtd/africastalking-go
+github.com/aws/aws-sdk-go-v2 (for R2)
+github.com/joho/godotenv v1.5.1
+```
 
 ---
 
-## ✅ Phase 0 Status: COMPLETE
+## ✅ Phase Completion Status
 
-### Core Requirements Met
-1. ✅ Project structure established
-2. ✅ Configuration management with validation
-3. ✅ PostgreSQL + PostGIS database connection
-4. ✅ Redis cache connection (Upstash REST API)
-5. ✅ Health check CLI tool
+### Phase 0: Foundation ✅ COMPLETE
+- Project structure, config, database, Redis, JWT, R2, health checks
+- Verified: all connections live
 
-### Bonus Features Added
-1. ✅ JWT authentication system (Phase 1 prep)
-2. ✅ Cloudflare R2 storage integration (Phase 1 prep)
-3. ✅ Comprehensive documentation (45,300+ words)
-4. ✅ Git branching strategy established
+### Phase 1: Authentication & User Management ✅ COMPLETE
+- User model with roles, KYC, soft delete
+- OTP service with rate limiting (Redis)
+- SMS service (Africa's Talking, bilingual)
+- JWT middleware + RBAC
+- User repository and service (FindOrCreate pattern)
+- Auth handlers (`send-otp`, `verify-otp`, `me`)
+- Server fully wired
+- **All 40+ tests pass against live infrastructure**
+
+### Phase 2: Core Domain Models 🎯 NEXT
+- Fleet companies, trucks, drivers
+- File uploads (KYC documents → R2)
+- Independent operator onboarding
+
+---
+
+## 🌐 Live API Endpoints (Phase 1)
+
+```
+GET  /health                      # Server health check
+GET  /api/v1/                     # API info
+
+POST /api/v1/auth/send-otp        # Request OTP via SMS
+POST /api/v1/auth/verify-otp      # Verify OTP → JWT token
+GET  /api/v1/auth/me              # Get own profile (JWT required)
+```
+
+### Auth Flow
+```
+1. POST /auth/send-otp   { phone, role, language }
+          ↓ Redis: SET otp:{phone} {code} EX 600
+          ↓ AT SMS: "Your code is 123456. Valid 10 minutes."
+
+2. POST /auth/verify-otp { phone, code }
+          ↓ Redis: GET otp:{phone} → compare → DEL
+          ↓ DB: FindOrCreate user
+          ↓ JWT: Generate(userID, phone, role)
+          ← { token, is_new, user: { id, phone, role, kyc_status } }
+
+3. GET /auth/me
+   Authorization: Bearer <token>
+          ↓ JWTMiddleware: Verify → attach claims
+          ↓ DB: GetByID(claims.UserID)
+          ← Full user profile
+```
 
 ---
 
 ## 🔄 Current Git Status
 
-**Branches:**
-- `main` - Production-ready Phase 0 code (pushed to remote)
-- `dev` - Active development for Phase 1 (current branch)
-
-**Last Safe Commit on dev:**
-```
-docs(phase-0): add comprehensive Phase 0 verification report documenting infrastructure completion
-```
-
 **Repository**: https://github.com/dominicnaatey/logistic-app-go
 
-**Security**: No credentials are committed to git. All secrets are in `.env` file which is `.gitignore`d.
+**Branches:**
+- `main` — Phase 0 stable code
+- `dev` — Phase 1 complete (current working branch)
 
----
-
-## 🚀 Phase 1: Authentication & User Management
-
-### Ready to Implement Next
-1. **User Model** - GORM struct with roles, phone, KYC status
-2. **OTP Service** - SMS via Africa's Talking API
-3. **Auth Endpoints** - `/auth/send-otp`, `/auth/verify-otp`
-4. **JWT Middleware** - Protect routes
-5. **User CRUD** - Admin endpoints
-
-### Infrastructure Already Ready
-- ✅ JWT system (pkg/auth/jwt.go)
-- ✅ Redis cache for OTP storage (pkg/cache/upstash.go)
-- ✅ Database connection (pkg/database/postgres.go)
-- ✅ Configuration system (pkg/config/config.go)
+**Last commit on dev:**
+```
+feat(auth): add user repository, service, and auth handlers (send-otp, verify-otp, me)
+```
 
 ---
 
 ## 🎓 Key Architectural Decisions
 
-### 1. Interface-Based Design
-All services implement interfaces for easy swapping.
-
-### 2. Serverless-First
-All infrastructure is serverless for:
-- Zero management overhead
-- Auto-scaling
-- Pay-per-use pricing
-- Global availability
-
-### 3. Comprehensive Documentation
-User requirement: "Anyone can take over easily"
-- Created 45,300+ words
-- Covers setup, architecture, daily work
-- Updated with each phase
-- Team-friendly format
-
-### 4. Security First
-- All credentials in `.env` file (`.gitignore`d)
-- Only placeholder examples in documentation
-- JWT secrets validated (min 32 characters)
-- Connection pooling configured
+1. **Interface-based design** — Every service has an interface. Easy to mock, easy to swap implementations (e.g. Africa's Talking → Twilio).
+2. **UUID primary keys** — Not sequential integers. Prevents ID enumeration attacks.
+3. **Phone-based auth** — No passwords. OTP only. Simpler UX for drivers in the field.
+4. **FindOrCreate pattern** — First OTP verification creates the account. No separate registration step.
+5. **Soft delete** — Users are never hard-deleted. Audit trail preserved.
+6. **Serverless-first** — Neon, Upstash, R2 — zero infrastructure management.
+7. **Bilingual** — All SMS messages support English (Ghana) and French (Mali).
 
 ---
 
-## 📝 Configuration Template
+## 📝 Environment Variables Required
 
-**File**: `.env.example` (safe to commit)
+See `.env.example` for the full template. Required keys:
 
-```env
-# Database (Neon PostgreSQL + PostGIS)
-DATABASE_URL=postgresql://username:password@ep-xxxx-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require
-
-# Upstash Redis (Serverless - REST API)
-UPSTASH_REDIS_REST_URL=https://your-endpoint.upstash.io
-UPSTASH_REDIS_REST_TOKEN=your-token-here
-
-# JWT Configuration
-JWT_SECRET=your-super-secret-jwt-key-replace-this-with-32-plus-chars
-JWT_EXPIRES_IN=168h
-
-# Cloudflare R2 (S3-compatible)
-R2_ACCOUNT_ID=your-cloudflare-account-id
-R2_ACCESS_KEY_ID=your-r2-access-key-id
-R2_SECRET_ACCESS_KEY=your-r2-secret-access-key
-R2_BUCKET_NAME=your-bucket-name
 ```
-
-**Note**: Actual `.env` file with real credentials should never be committed to git.
-
----
-
-## 🔍 Security Best Practices Implemented
-
-### ✅ Credential Protection
-- `.env` file in `.gitignore`
-- Only placeholder examples in documentation
-- No hardcoded credentials in source code
-- Environment variable validation
-
-### ✅ Database Security
-- Neon PostgreSQL with SSL/TLS enforced
-- Connection pooling limits
-- PostGIS extension pre-enabled
-- Serverless architecture (no VPS to secure)
-
-### ✅ Authentication Security
-- JWT with HS256 signing
-- Minimum 32-character secret validation
-- Token expiry configuration
-- Key generator tool for secure secrets
-
-### ✅ Infrastructure Security
-- Upstash Redis with REST API (firewall-friendly)
-- Cloudflare R2 with access key rotation capability
-- All services serverless (reduced attack surface)
+DATABASE_URL          Neon PostgreSQL connection string
+UPSTASH_REDIS_REST_URL
+UPSTASH_REDIS_REST_TOKEN
+JWT_SECRET            Min 32 chars — generate with: go run cmd/keygen/main.go
+JWT_EXPIRES_IN        Default: 168h (7 days)
+AT_USERNAME           Africa's Talking username ("sandbox" for dev)
+AT_API_KEY            Africa's Talking API key
+R2_ACCOUNT_ID         Cloudflare account ID
+R2_ACCESS_KEY_ID
+R2_SECRET_ACCESS_KEY
+R2_BUCKET_NAME        trucking-logistics-app
+```
 
 ---
 
 ## 🛠️ Development Commands
 
-### Setup
 ```bash
+# Setup
 cp .env.example .env
-# Edit .env with your actual credentials (never commit this!)
-```
 
-### Build & Test
-```bash
-# Test all connections
+# Test all infrastructure connections
 go run cmd/check/main.go
 
-# Build everything
-go build ./...
+# Run Phase 1 integration tests
+go run cmd/test_user/main.go
+go run cmd/test_otp/main.go
+go run cmd/test_sms/main.go
+go run cmd/test_jwt_middleware/main.go
+go run cmd/test_auth/main.go
 
 # Start server
 go run cmd/server/main.go
 
-# Generate JWT secret
+# Build all binaries
+go build ./...
+
+# Generate new JWT secret
 go run cmd/keygen/main.go
 ```
 
-### Git Security Commands
-```bash
-# Check for accidentally committed secrets
-git log -p | grep -i "password\|token\|secret\|key"
+---
 
-# Remove a file with exposed credentials from git history
-git filter-branch --force --index-filter \
-  "git rm --cached --ignore-unmatch FILENAME" \
-  --prune-empty --tag-name-filter cat -- --all
-```
+## 🔍 How to Use This Log (For AI Assistants)
+
+1. Read this file to understand current project state
+2. Check `CHANGELOG.md` for version history
+3. Run `go run cmd/check/main.go` to verify infrastructure
+4. Run `go build ./...` to verify code compiles
+5. Current branch is `dev` — all new work goes here
+6. Phase 2 is next: Fleet companies, trucks, driver models
 
 ---
 
-## ⚠️ Security Incident Response Protocol
+## 🔐 Security Notes
 
-**If credentials are accidentally exposed:**
-
-1. **Immediately** rotate exposed credentials (Neon, Upstash, R2, etc.)
-2. **Remove** from git history:
-   ```bash
-   git reset --hard HEAD~1
-   git push origin <branch> --force
-   ```
-3. **Scan** for other exposures:
-   ```bash
-   grep -r "actual-secret" --include="*.md" --include="*.go" .
-   ```
-4. **Document** the incident and remediation
-5. **Review** `.gitignore` rules
-6. **Educate** team on secure practices
-
----
-
-## 📚 Essential Documentation Links
-
-1. **Getting Started**: [docs/DEVELOPER-GUIDE.md](docs/DEVELOPER-GUIDE.md)
-2. **Architecture**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-3. **Git Workflow**: [docs/GIT-WORKFLOW.md](docs/GIT-WORKFLOW.md)
-4. **Security Guides**: 
-   - [docs/JWT-SETUP.md](docs/JWT-SETUP.md)
-   - [docs/NEON-SETUP.md](docs/NEON-SETUP.md)
-   - [docs/UPSTASH-SETUP.md](docs/UPSTASH-SETUP.md)
-   - [docs/R2-SETUP.md](docs/R2-SETUP.md)
-
----
-
-## 🎯 Next Steps
-
-### Immediate Actions
-1. **Verify credentials are rotated** (if exposed credentials were real)
-2. **Continue with Phase 1** development
-3. **Follow secure practices** for all new code
-
-### Phase 1 Implementation
-- Create User model with GORM
-- Implement OTP service with Africa's Talking SMS
-- Create auth endpoints
-- Add JWT middleware
-- Implement user CRUD operations
+- `.env` is in `.gitignore` — never committed
+- One security incident occurred (August 11): credentials committed to docs, immediately reverted
+- All credentials stored only in `.env`
+- JWT secret minimum 32 characters enforced at startup
+- OTP rate limited to 3 per phone per 10 minutes
+- Soft delete used — data retained for audit
 
 ---
 
 ## 📅 Project Timeline
 
-**Phase 0**: Foundation & Setup ✅ **COMPLETE** (August 11, 2026)  
-**Phase 1**: Authentication & User Management 🎯 **NEXT**  
-**Phase 2**: Core Domain Models (Fleet, Trucks, Drivers)  
-**Phase 3**: Load & Trip System  
-**Phase 4**: Matching Engine  
-**Phase 5**: Live GPS Tracking  
+| Phase | Description | Status | Date |
+|-------|-------------|--------|------|
+| **0** | Foundation & Setup | ✅ Complete | Aug 11, 2026 |
+| **1** | Authentication & User Management | ✅ Complete | Aug 13, 2026 |
+| **2** | Core Domain Models (Fleet, Trucks, Drivers) | 🎯 Next | — |
+| **3** | Load & Trip System | ⬜ Planned | — |
+| **4** | Matching Engine | ⬜ Planned | — |
+| **5** | Live GPS Tracking | ⬜ Planned | — |
 
 ---
 
-## 🔐 Security Checklist for New Developers
-
-### Before Committing Code
-- [ ] No credentials in source files
-- [ ] Only placeholders in documentation
-- [ ] `.env` file not staged for commit
-- [ ] Run `git status` to verify no sensitive files
-
-### Before Pushing to Remote
-- [ ] Review diff for accidental credential exposure
-- [ ] Ensure `.env` is in `.gitignore`
-- [ ] Use `--force` only for security fixes
-
-### Regular Maintenance
-- [ ] Rotate credentials periodically
-- [ ] Review `.gitignore` rules
-- [ ] Audit committed files for secrets
-- [ ] Update security documentation
-
----
-
-**Last Updated**: August 11, 2026  
-**Status**: ✅ Phase 0 Complete, Ready for Phase 1  
-**Security**: ✅ No credentials exposed in repository  
-**Confidence**: 100% Production-Ready with Security Best Practices
+**Last Updated**: August 13, 2026  
+**Current Phase**: Phase 1 ✅ Complete  
+**Next Phase**: Phase 2 — Core Domain Models  
+**Security**: No credentials in this file
