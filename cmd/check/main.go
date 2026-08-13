@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
 	"logistic-app-go/pkg/auth"
 	"logistic-app-go/pkg/cache"
 	"logistic-app-go/pkg/config"
@@ -155,36 +156,33 @@ func checkR2(storageConfig config.StorageConfig) error {
 }
 
 func checkJWT(jwtConfig config.JWTConfig) error {
-	// Create JWT manager
 	jwtManager, err := auth.NewJWTManager(jwtConfig.Secret, jwtConfig.ExpiresIn)
 	if err != nil {
 		return err
 	}
 
-	// Test token generation
-	testUserID := uint(1)
-	testEmail := "test@example.com"
+	// Test with UUID + phone (matches Phase 1 User model)
+	testUserID := uuid.New()
+	testPhone := "+233501234567"
 	testRole := "admin"
 
-	token, err := jwtManager.Generate(testUserID, testEmail, testRole)
+	token, err := jwtManager.Generate(testUserID, testPhone, testRole)
 	if err != nil {
 		return fmt.Errorf("token generation failed: %w", err)
 	}
 	fmt.Printf("  ✓ JWT secret key validated (%d chars)\n", len(jwtConfig.Secret))
 	fmt.Println("  ✓ Token generation working")
 
-	// Test token verification
 	claims, err := jwtManager.Verify(token)
 	if err != nil {
 		return fmt.Errorf("token verification failed: %w", err)
 	}
 
-	// Verify claims
 	if claims.UserID != testUserID {
-		return fmt.Errorf("user ID mismatch: expected %d, got %d", testUserID, claims.UserID)
+		return fmt.Errorf("user ID mismatch")
 	}
-	if claims.Email != testEmail {
-		return fmt.Errorf("email mismatch: expected %s, got %s", testEmail, claims.Email)
+	if claims.Phone != testPhone {
+		return fmt.Errorf("phone mismatch: expected %s, got %s", testPhone, claims.Phone)
 	}
 	if claims.Role != testRole {
 		return fmt.Errorf("role mismatch: expected %s, got %s", testRole, claims.Role)
